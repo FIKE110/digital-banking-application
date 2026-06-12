@@ -46,6 +46,65 @@ Consumes events from the Outbox table and routes them to downstream consumers as
 ### API Response
 The final response flows back to the client through the service and gateway layers.
 
+## Module Structure Overview
+
+```
+                    ┌─────────────────────────────────────────────────────┐
+                    │                   common-lib                        │
+                    │  (SHARED LIBRARY)                                  │
+                    │  DTOs, Constants, Utilities, Base Classes          │
+                    └──┬──────────────────────────────────────────────────┘
+                       │ depended on by all modules
+                       v
+┌────────────────────────────────┐
+│          api-gateway           │
+│  (SPRING CLOUD GATEWAY)       │
+│  Rate Limiting / Routing      │
+│  Security Filtering           │
+└──────────┬─────────────────────┘
+           │ forwards requests
+           v
+┌──────────────────────────────────────────────────────────────────┐
+│                      core-app-service                            │
+│              (SPRING BOOT RUNTIME - WIRES EVERYTHING)           │
+│─────────────────────────────────────────────────────────────────│
+│  Controllers (REST API)   │   Security (JWT Filter)            │
+│  Exception Handlers       │   Service Orchestration            │
+│  RabbitMQ Listeners       │   Spring Config / Properties       │
+└──┬──────────────────────┬───────────────────────────────────────┘
+   │ depends on           │ depends on
+   v                      v
+┌─────────────────┐  ┌─────────────────────────────────────┐
+│   core-lib      │  │        core-data-lib                │
+│ (BUSINESS LOGIC)│  │       (DATABASE LAYER)              │
+│─────────────────│  │─────────────────────────────────────│
+│ Ledger Engine   │  │ JPA Entities, Repositories         │
+│ Transfer Rules  │  │ Flyway Migrations, Outbox Table    │
+│ State Machines  │  │ PostgreSQL Configuration           │
+│ Fraud Rules     │  └─────────────────────────────────────┘
+└─────────────────┘
+
+    ┌────────────────────────────┐       ┌────────────────────────────┐
+    │      email-service         │       │      audit-service         │
+    │  (RABBITMQ CONSUMER)      │       │  (RABBITMQ CONSUMER)      │
+    │───────────────────────────│       │───────────────────────────│
+    │ Listens to outbox events  │       │ Listens to outbox events  │
+    │ Sends SMTP notifications  │       │ Persists audit logs       │
+    └────────────────────────────┘       └────────────────────────────┘
+```
+
+### Module Descriptions
+
+| Module | groupId | Role | Key Contents |
+|--------|---------|------|-------------|
+| **common-lib** | `com.bank.common` | Shared library used by all other modules | DTOs, constants, utility classes, base types |
+| **core-lib** | `com.bank.core` | Pure domain logic (no framework deps) | Ledger engine, transfer validation, state machines, fraud rules |
+| **core-data-lib** | `com.bank.core.data` | Data persistence layer | JPA entities, Spring Data repositories, Flyway migrations, Outbox table |
+| **core-app-service** | `com.bank.core.app` | Main Spring Boot runtime | REST controllers, JWT security, exception handlers, service orchestration, RabbitMQ listeners |
+| **api-gateway** | `com.bank.extern.gateway` | Client entry point (optional) | Spring Cloud Gateway routes, rate limiters, security filters |
+| **email-service** | `com.bank.extern.email` | Async event consumer | RabbitMQ listener, SMTP mail sending (MailHog in dev) |
+| **audit-service** | `com.bank.extern.audit` | Async event consumer | RabbitMQ listener, audit log persistence for compliance |
+
 ## Event Flow (Outbox Pattern)
 
 ```
