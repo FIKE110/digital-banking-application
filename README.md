@@ -70,7 +70,7 @@ This guarantees at-least-once delivery without risking data inconsistency betwee
 | Cache            | Redis                  |
 | Message Broker   | RabbitMQ               |
 | Event Store      | Outbox Table           |
-| API Gateway      | Spring Cloud Gateway / Nginx |
+| API Gateway      | Spring Cloud Gateway |
 
 ## Mermaid Source
 
