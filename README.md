@@ -72,6 +72,34 @@ This guarantees at-least-once delivery without risking data inconsistency betwee
 | Event Store      | Outbox Table           |
 | API Gateway      | Spring Cloud Gateway |
 
+## Getting Started
+
+### Prerequisites
+- Docker & Docker Compose
+- Java 17+
+- Maven
+
+### Start External Services
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+This starts PostgreSQL, Redis, RabbitMQ (management UI at `http://localhost:15672`), and MailHog (UI at `http://localhost:8025`).
+
+### Stop Services
+
+```bash
+docker compose down
+```
+
+To also remove persisted data:
+
+```bash
+docker compose down -v
+```
+
 ## Mermaid Source
 
 ```mermaid
