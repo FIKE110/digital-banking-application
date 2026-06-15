@@ -1,6 +1,7 @@
 package com.bank.extern.email.controller;
 
 import com.bank.extern.email.service.EmailService;
+import com.bank.extern.email.service.NotificationService;
 import jakarta.mail.MessagingException;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,7 +11,7 @@ import java.util.Random;
 @RequestMapping("/email")
 public class EmailController {
 
-    private final EmailService emailService;
+    private final NotificationService emailService;
 
     public EmailController(EmailService emailService) {
         this.emailService = emailService;
