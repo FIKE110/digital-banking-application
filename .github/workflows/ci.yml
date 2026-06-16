@@ -1,0 +1,61 @@
+name: Build All
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  MAVEN_OPTS: -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: banking
+          POSTGRES_PASSWORD: banking_pass
+          POSTGRES_DB: banking_db
+        options: >-
+          --health-cmd "pg_isready -U banking -d banking_db"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout repo
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Build and verify all modules
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/banking_db
+          SPRING_DATASOURCE_USERNAME: banking
+          SPRING_DATASOURCE_PASSWORD: banking_pass
+
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+        run: mvn clean verify --no-transfer-progress
