@@ -1,21 +1,17 @@
 package com.bank.core.data.model;
 
-import java.time.LocalDateTime;
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+import jakarta.persistence.*;
+import lombok.*;
+
 @Entity
-@Table( name = "users")
-public class User extends AuditModel{
+@Table(name = "users")
+public class User extends AuditModel {
 
-    @column ( name = "username")
+    @Column(name = "username")
     private String username;
-    @column ( name = "email")
+    @Column(name = "email")
     private String email;
-    @column ( name = "password")
+    @Column(name = "password")
     private String password;
-
 
 }

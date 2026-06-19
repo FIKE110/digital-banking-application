@@ -1,23 +1,25 @@
 package com.bank.core.data.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
-@Table (name = "Transaction")
+@Table(name = "Transaction")
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @column (name = "id")
+    @Column(name = "id")
     private Long id;
-    @column (name = "reference")
+    @Column(name = "reference")
     private String reference;
-    @column ( name = "amount")
+    @Column(name = "amount")
     private Double amount;
-    @column (name = "transactionalType")
+    @Column(name = "transactionalType")
     private String transactionType;
     @CreationTimestamp
     @Column(name = "created_date")
@@ -25,6 +27,5 @@ public class Transaction {
     @UpdateTimestamp
     @Column(name = "updated_date")
     LocalDateTime updatedDate;
-
 
 }
