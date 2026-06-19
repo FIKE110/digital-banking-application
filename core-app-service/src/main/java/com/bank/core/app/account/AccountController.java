@@ -19,17 +19,17 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-    public String get() {
+    public String get(@PathVariable String id) {
         return "ACCOUNT_FETCHED";
     }
 
     @GetMapping("/{id}/balance")
-    public String balance() {
+    public String balance(@PathVariable String id) {
         return "BALANCE_FETCHED";
     }
 
     @PatchMapping("/{id}/status")
-    public String updateStatus() {
+    public String updateStatus(@PathVariable String id) {
         return "ACCOUNT_STATUS_UPDATED";
     }
 }

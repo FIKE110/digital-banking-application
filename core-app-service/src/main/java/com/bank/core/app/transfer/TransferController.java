@@ -19,12 +19,12 @@ public class TransferController {
     }
 
     @GetMapping("/{id}")
-    public String get() {
+    public String get(@PathVariable String id) {
         return "TRANSFER_FETCHED";
     }
 
     @PostMapping("/{id}/reverse")
-    public String reverse() {
+    public String reverse(@PathVariable String id) {
         return "TRANSFER_REVERSED";
     }
 }

@@ -1,6 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="run-all-services" type="CompoundRunConfigurationType">
+    <toRun name="AuditApplication" type="SpringBootApplicationConfigurationType" />
+    <toRun name="CoreApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="EmailApplication" type="SpringBootApplicationConfigurationType" />
+    <toRun name="GatewayApplication" type="SpringBootApplicationConfigurationType" />
     <method v="2" />
   </configuration>
 </component>

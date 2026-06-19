@@ -14,12 +14,12 @@ public class LedgerController {
     }
 
     @GetMapping("/transactions/{id}")
-    public String getTransaction() {
+    public String getTransaction(@PathVariable String id) {
         return "TRANSACTION_FETCHED";
     }
 
     @GetMapping("/accounts/{id}/entries")
-    public String accountEntries() {
+    public String accountEntries(@PathVariable String id) {
         return "LEDGER_ENTRIES_FETCHED";
     }
 }

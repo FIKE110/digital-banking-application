@@ -14,12 +14,12 @@ public class AdminController {
     }
 
     @PatchMapping("/accounts/{id}/status")
-    public String updateAccountStatus() {
+    public String updateAccountStatus(@PathVariable String id) {
         return "ADMIN_ACCOUNT_STATUS_UPDATED";
     }
 
     @PutMapping("/limits/{accountType}")
-    public String updateLimits() {
+    public String updateLimits(@PathVariable String accountType) {
         return "LIMITS_UPDATED";
     }
 
