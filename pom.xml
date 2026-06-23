@@ -30,6 +30,9 @@
         <spring.boot.version>4.1.0</spring.boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.38</lombok.version>
+        <jnanoid.version>2.0.0</jnanoid.version>
+        <ulid-creator.version>5.2.0</ulid-creator.version>
+        <spring-cloud.version>2025.1.2</spring-cloud.version>
     </properties>
 
     <!-- Central dependency management -->
@@ -45,9 +48,30 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>com.aventrix.jnanoid</groupId>
+                <artifactId>jnanoid</artifactId>
+                <version>${jnanoid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.f4b6a3</groupId>
+                <artifactId>ulid-creator</artifactId>
+                <version>${ulid-creator.version}</version>
+            </dependency>
+
+            <!-- Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
+
 
     <build>
         <pluginManagement>
