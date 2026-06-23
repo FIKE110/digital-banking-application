@@ -9,7 +9,6 @@
         <artifactId>banking-platform</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-
     <groupId>com.bank.extern.gateway</groupId>
     <artifactId>api-gateway-service</artifactId>
 
