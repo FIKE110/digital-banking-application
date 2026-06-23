@@ -4,3 +4,26 @@ server:
 spring:
   application:
     name: core-app-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  datasource:
+    password: banking_pass
+    url: jdbc:postgresql://localhost:5432/banking_db
+    username: banking
+    driver-class-name: org.postgresql.Driver
+
+
+springdoc:
+  api-docs:
+    path: /api/v3/docs
+scalar:
+  tag-sorter: alpha
+  operation-sorter: method
+  path: "docs"
+  url: ${springdoc.api-docs.path}
+  enabled: true
+app:
+  jwt:
+    key: hW55LPxahNOumpcWUiWGmTqf/GTQHN8xNRFcNIv3P/U=

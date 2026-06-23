@@ -2,10 +2,11 @@ package com.bank.core.app.ledger;
 
 import org.springframework.web.bind.annotation.*;
 
+import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 import static com.bank.common.constant.ApiConstant.LEDGER_BASE;
 
 @RestController
-@RequestMapping(LEDGER_BASE)
+@RequestMapping(API_V1_PATH + LEDGER_BASE)
 public class LedgerController {
 
     @GetMapping("/transactions")

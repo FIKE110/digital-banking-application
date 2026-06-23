@@ -3,9 +3,10 @@ package com.bank.core.app.admin;
 import org.springframework.web.bind.annotation.*;
 
 import static com.bank.common.constant.ApiConstant.ADMIN_BASE;
+import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 
 @RestController
-@RequestMapping(ADMIN_BASE)
+@RequestMapping(API_V1_PATH + ADMIN_BASE)
 public class AdminController {
 
     @GetMapping("/accounts")

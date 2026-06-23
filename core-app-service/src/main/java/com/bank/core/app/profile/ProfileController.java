@@ -2,10 +2,11 @@ package com.bank.core.app.profile;
 
 import org.springframework.web.bind.annotation.*;
 
+import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 import static com.bank.common.constant.ApiConstant.PROFILE_BASE;
 
 @RestController
-@RequestMapping(PROFILE_BASE)
+@RequestMapping(API_V1_PATH + PROFILE_BASE)
 public class ProfileController {
 
     @GetMapping

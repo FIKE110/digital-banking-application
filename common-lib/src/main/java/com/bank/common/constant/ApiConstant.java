@@ -7,6 +7,9 @@ public final class ApiConstant {
     public static final String API_BASE_PATH = "/api";
     public static final String API_V1_PATH = API_BASE_PATH+"/v1";
 
+
+    public static final String DOC_BASE_PATH = "/docs";
+
     // -- Auth --
     public static final String AUTH_BASE = "/auth";
     public static final String AUTH_REGISTER = AUTH_BASE + "/register";

@@ -3,9 +3,10 @@ package com.bank.core.app.account;
 import org.springframework.web.bind.annotation.*;
 
 import static com.bank.common.constant.ApiConstant.ACCOUNT_BASE;
+import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 
 @RestController
-@RequestMapping(ACCOUNT_BASE)
+@RequestMapping(API_V1_PATH + ACCOUNT_BASE)
 public class AccountController {
 
     @PostMapping
