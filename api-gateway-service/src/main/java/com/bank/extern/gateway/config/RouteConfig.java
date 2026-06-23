@@ -22,6 +22,10 @@ public class RouteConfig {
         return builder.routes()
                 .route("auth-service", r -> r
                         .path(AUTH_BASE + "/**")
+                        .filters(f -> f.rewritePath(
+                                AUTH_BASE.concat("/(?<segment>.*)"),
+                                API_V1_PATH+AUTH_BASE.concat("/${segment}")
+                        ))
                         .uri(CORE_HOST))
                 .route("account-service", r -> r
                         .path(ACCOUNT_BASE + "/**")

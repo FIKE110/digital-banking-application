@@ -2,10 +2,11 @@ package com.bank.core.app.transfer;
 
 import org.springframework.web.bind.annotation.*;
 
+import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 import static com.bank.common.constant.ApiConstant.TRANSFER_BASE;
 
 @RestController
-@RequestMapping(TRANSFER_BASE)
+@RequestMapping(API_V1_PATH + TRANSFER_BASE)
 public class TransferController {
 
     @PostMapping

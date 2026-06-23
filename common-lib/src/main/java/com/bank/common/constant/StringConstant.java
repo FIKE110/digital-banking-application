@@ -53,6 +53,7 @@ public final class StringConstant {
     public static final String AUTHORIZATION = "Authorization";
     public static final String BASIC = "Basic";
     public static final String TOKEN = "token";
+    public static final String ACCESS_TOKEN = "access_token";
     public static final String REFRESH_TOKEN = "refresh_token";
 
     public static final String NOT_BLANK = "{field} must not be blank";
@@ -85,4 +86,7 @@ public final class StringConstant {
     public static final String NO = "N";
     public static final String TRUE = "true";
     public static final String FALSE = "false";
+
+    public static final String NULL = "null";
+    public static final String REQUEST_ID = "requestId";
 }
