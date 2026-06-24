@@ -85,7 +85,7 @@ public class AuthService {
         user.setAuthorities(Collections.emptyList());
         user.setUid(UlidCreator.getUlid().toString());
         user.setLastLogoutDate(null);
-        user.setRole(role);
+        user.setRoles(Set.of(role));
         user.setPermissions(Collections.emptySet());
         userRepository.save(user);
 
@@ -193,8 +193,14 @@ public class AuthService {
         User user= (User) userDetailsServiceImpl.loadUserByUsername(Objects.requireNonNull(jwt.getSubject()));
 
         Set<String> permissions=new HashSet<>();
-        if(user.getRole()!=null && user.getRole().getPermissions()!=null){
-            user.getRole().getPermissions().forEach(p->permissions.add(p.getPermissionName()));
+        Set<String> roleNames = new HashSet<>();
+        if(user.getRoles()!=null){
+            user.getRoles().forEach(role -> {
+                roleNames.add(role.getRoleName());
+                if(role.getPermissions()!=null){
+                    role.getPermissions().forEach(p->permissions.add(p.getPermissionName()));
+                }
+            });
         }
         if(user.getPermissions()!=null){
             user.getPermissions().forEach(p->permissions.add(p.getPermissionName()));
@@ -204,7 +210,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .uid(user.getUid())
-                .roleName(user.getRole()!=null?user.getRole().getRoleName():null)
+                .roleNames(roleNames)
                 .permissions(permissions)
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())

@@ -29,24 +29,29 @@ public class User extends AuditModel implements UserDetails {
     @Column(name="last_logout_date")
     private LocalDateTime lastLogoutDate;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<Role> roles;
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Permission> permissions;
 
+    @Transient
     private Collection<? extends GrantedAuthority> authorities;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
-        role.getPermissions().forEach(permission -> {
-            grantedAuthorities.add(new SimpleGrantedAuthority(permission.getPermissionName()));
-        });
-
-        grantedAuthorities.add(new SimpleGrantedAuthority(role.getRoleName()));
-        permissions.forEach(permission -> {
-            new SimpleGrantedAuthority(permission.getPermissionName());
-        });
+        if (roles != null) {
+            roles.forEach(role -> {
+                if (role.getPermissions() != null) {
+                    role.getPermissions().forEach(permission ->
+                            grantedAuthorities.add(new SimpleGrantedAuthority(permission.getPermissionName())));
+                }
+                grantedAuthorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+            });
+        }
+        if (permissions != null) {
+            permissions.forEach(permission ->
+                    grantedAuthorities.add(new SimpleGrantedAuthority(permission.getPermissionName())));
+        }
 
         return grantedAuthorities;
     }

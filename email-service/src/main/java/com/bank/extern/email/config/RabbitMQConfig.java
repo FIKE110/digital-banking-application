@@ -5,6 +5,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,35 +33,35 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding emailOtpBinding(Queue emailOtpQueue, TopicExchange bankingExchange) {
+    public Binding emailOtpBinding(@Qualifier("emailOtpQueue") Queue emailOtpQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailOtpQueue)
                 .to(bankingExchange)
                 .with("user.otp_sent");
     }
 
     @Bean
-    public Binding emailUserRegisteredBinding(Queue emailNotificationQueue, TopicExchange bankingExchange) {
+    public Binding emailUserRegisteredBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
                 .with("user.registered");
     }
 
     @Bean
-    public Binding emailUserPasswordResetBinding(Queue emailNotificationQueue, TopicExchange bankingExchange) {
+    public Binding emailUserPasswordResetBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
                 .with("user.password_reset");
     }
 
     @Bean
-    public Binding emailUserAccountLockedBinding(Queue emailNotificationQueue, TopicExchange bankingExchange) {
+    public Binding emailUserAccountLockedBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
                 .with("user.account_locked");
     }
 
     @Bean
-    public Binding emailTransactionBinding(Queue emailNotificationQueue, TopicExchange bankingExchange) {
+    public Binding emailTransactionBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
                 .with("transaction.*");

@@ -1,7 +1,6 @@
 package com.bank.core.lib.service;
 
 import com.bank.core.data.user.User;
-import com.sun.source.tree.TryTree;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,6 +8,7 @@ import org.springframework.security.oauth2.jwt.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class BasicJwtServiceImpl implements JwtService {
@@ -38,9 +38,7 @@ public class BasicJwtServiceImpl implements JwtService {
     public boolean isAccessTokenValid(String token) {
         try {
             Jwt jwt = jwtDecoder.decode(token);
-
             return ACCESS_TOKEN.equals(jwt.getClaim("type"));
-
         } catch (Exception e) {
             return false;
         }
@@ -67,15 +65,32 @@ public class BasicJwtServiceImpl implements JwtService {
         User user=(User) authentication.getPrincipal();
 
         assert user != null;
+
+        List<String> authorities = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        List<String> roles = authorities.stream()
+                .filter(a -> a.startsWith("ROLE_"))
+                .toList();
+
+        List<String> scopes = authorities.stream()
+                .filter(a -> !a.startsWith("ROLE_") && !a.startsWith("FACTOR_"))
+                .toList();
+
+        List<String> factors= authorities.stream().filter(
+                a->a.startsWith("FACTOR_")
+        ).toList();
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("banking-platform")
                 .issuedAt(now)
                 .subject(user.getUid())
                 .claim("type", type)
-                .claim("roles", authentication.getAuthorities()
-                        .stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .toList())
+                .claim("roles", roles)
+                .claim("scopes", scopes)
+                .claim("amr", factors)
                 .expiresAt(now.plus(exp, ChronoUnit.MINUTES))
                 .build();
 

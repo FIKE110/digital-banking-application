@@ -12,7 +12,7 @@ public class UserResponseDto {
     private String username;
     private String email;
     private String uid;
-    private String roleName;
+    private Set<String> roleNames;
     private Set<String> permissions;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
