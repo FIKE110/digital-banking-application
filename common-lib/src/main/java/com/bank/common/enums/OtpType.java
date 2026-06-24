@@ -1,0 +1,9 @@
+package com.bank.common.enums;
+
+public enum OtpType {
+    FORGOT_PASSWORD,
+    EMAIL_VERIFICATION,
+    PHONE_VERIFICATION,
+    TRANSACTION_CONFIRMATION,
+    ACCOUNT_ACTIVATION
+}

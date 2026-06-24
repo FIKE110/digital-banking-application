@@ -1,9 +1,12 @@
 package com.bank.core.app.auth.controller;
 
 import com.bank.common.constant.MessageConstant;
+import com.bank.common.dto.auth.ForgotPasswordRequestDto;
 import com.bank.common.dto.auth.LoginRequestDto;
 import com.bank.common.dto.auth.LoginResponseDto;
+import com.bank.common.dto.auth.ResetPasswordRequestDto;
 import com.bank.common.dto.auth.SignupRequestDto;
+import com.bank.common.dto.auth.UserResponseDto;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
 import com.bank.core.app.auth.service.AuthService;
@@ -37,27 +40,32 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public String refresh() {
-        return "TOKEN_REFRESHED";
+    public ResponseEntity<ApiResponse<LoginResponseDto>> refresh(@RequestParam("token") String refreshToken) {
+        LoginResponseDto dto=authService.refreshToken(refreshToken);
+        return ApiResponseUtil.buildSuccess(MessageConstant.TOKEN_REFRESHED,dto);
     }
 
     @PostMapping("/logout")
-    public String logout() {
-        return "LOGGED_OUT";
+    public ResponseEntity<ApiResponse<Object>> logout(@RequestParam("token") String accessToken) {
+        authService.logout(accessToken);
+        return ApiResponseUtil.buildSuccess(HttpStatus.OK.value(), MessageConstant.LOGOUT_SUCCESS,null);
     }
 
     @PostMapping("/forgot-password")
-    public String forgotPassword() {
-        return "OTP_SENT";
+    public ResponseEntity<ApiResponse<Object>> forgotPassword(@RequestBody ForgotPasswordRequestDto dto) {
+        authService.forgotPassword(dto);
+        return ApiResponseUtil.buildSuccess(HttpStatus.OK.value(), MessageConstant.OTP_SENT,null);
     }
 
     @PostMapping("/reset-password")
-    public String resetPassword() {
-        return "PASSWORD_RESET";
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@RequestBody ResetPasswordRequestDto dto) {
+        authService.resetPassword(dto);
+        return ApiResponseUtil.buildSuccess(HttpStatus.OK.value(), MessageConstant.PASSWORD_RESET,null);
     }
 
     @GetMapping("/me")
-    public String me() {
-        return "USER_FETCHED";
+    public ResponseEntity<ApiResponse<UserResponseDto>> me(@RequestParam("token") String accessToken) {
+        UserResponseDto dto=authService.getCurrentUser(accessToken);
+        return ApiResponseUtil.buildSuccess(dto);
     }
 }

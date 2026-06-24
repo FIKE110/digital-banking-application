@@ -1,6 +1,7 @@
 package com.bank.core.lib.service;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface JwtService {
 
@@ -13,5 +14,7 @@ public interface JwtService {
     boolean isAccessTokenValid(String token);
 
     boolean isRefreshTokenValid(String token);
+
+    Jwt decode(String token);
 
 }

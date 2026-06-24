@@ -56,6 +56,11 @@ public class BasicJwtServiceImpl implements JwtService {
         }
     }
 
+    @Override
+    public Jwt decode(String token) {
+        return jwtDecoder.decode(token);
+    }
+
     private String generateToken(Authentication authentication,long exp,String type){
         Instant now = Instant.now();
 

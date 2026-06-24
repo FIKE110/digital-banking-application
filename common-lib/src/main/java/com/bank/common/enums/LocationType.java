@@ -1,0 +1,9 @@
+package com.bank.common.enums;
+
+public enum LocationType {
+    LOCATION_TYPE_LOCAL,
+    LOCATION_TYPE_REMOTE,
+    LOCATION_TYPE_USER_LOCATION,
+    LOCATION_TYPE_BUSINESS_LOCATION,
+    LOCATION_TYPE_OTHER
+}

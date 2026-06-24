@@ -12,6 +12,10 @@ public final class MessageConstant {
     public static final String LOGOUT_SUCCESS = "Logout successful";
     public static final String TOKEN_EXPIRED = "Token has expired";
     public static final String TOKEN_INVALID = "Invalid token";
+    public static final String TOKEN_INCORRECT = "Invalid token";
+    public static final String TOKEN_REFRESHED = "Token refreshed";
+    public static final String OTP_SENT = "OTP sent successfully";
+    public static final String PASSWORD_RESET = "Password reset successfully";
 
     // =========================
     // USER MESSAGES

@@ -13,6 +13,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/banking_db
     username: banking
     driver-class-name: org.postgresql.Driver
+  rabbitmq:
+    host: localhost
+    password: banking_pass
+    username: banking
+
 
 
 springdoc:
