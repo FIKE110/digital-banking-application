@@ -1,5 +1,6 @@
 package com.bank.core.app.account.accountController;
 
+import com.bank.core.data.model.Account;
 import org.springframework.web.bind.annotation.*;
 
 import static com.bank.common.constant.ApiConstant.ACCOUNT_BASE;
