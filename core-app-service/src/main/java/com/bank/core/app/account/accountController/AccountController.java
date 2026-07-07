@@ -1,4 +1,4 @@
-package com.bank.core.app.account;
+package com.bank.core.app.account.accountController;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -34,3 +34,7 @@ public class AccountController {
         return "ACCOUNT_STATUS_UPDATED";
     }
 }
+
+
+
+
