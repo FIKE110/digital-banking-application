@@ -11,6 +11,7 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import static com.bank.common.constant.ApiConstant.*;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Value("${springdoc.api-docs.path}")

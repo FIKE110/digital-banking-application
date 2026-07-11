@@ -43,7 +43,7 @@ public class RabbitMQConfig {
     public Binding emailUserRegisteredBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
-                .with("user.registered");
+                .with("user.user_registered");
     }
 
     @Bean
@@ -64,6 +64,6 @@ public class RabbitMQConfig {
     public Binding emailTransactionBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
-                .with("transaction.*");
+                .with("transfer.transaction_completed");
     }
 }
