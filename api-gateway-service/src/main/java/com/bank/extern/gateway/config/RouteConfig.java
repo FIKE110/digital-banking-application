@@ -16,6 +16,8 @@ import static com.bank.common.constant.ApiConstant.*;
 public class RouteConfig {
 
     private static final String CORE_HOST = "http://localhost:8081";
+    private static final String AUDIT_HOST = "http://localhost:8091";
+    private static final String EMAIL_HOST = "http://localhost:8090";
 
     @Bean
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
@@ -40,6 +42,26 @@ public class RouteConfig {
                         .path("/api/v1/ledger/**")
                         .uri(CORE_HOST))
 
+                // Beneficiary routes (user)
+                .route("beneficiary-service", r -> r
+                        .path("/api/v1/beneficiaries/**")
+                        .uri(CORE_HOST))
+
+                // Bill payment routes (user)
+                .route("bill-service", r -> r
+                        .path("/api/v1/bills/**")
+                        .uri(CORE_HOST))
+
+                // Card routes (user)
+                .route("card-service", r -> r
+                        .path("/api/v1/cards/**")
+                        .uri(CORE_HOST))
+
+                // Notification routes (user)
+                .route("notification-service", r -> r
+                        .path("/api/v1/notifications/**")
+                        .uri(CORE_HOST))
+
                 // Profile routes (user)
                 .route("profile-service", r -> r
                         .path("/api/v1/profile/**")
@@ -49,6 +71,16 @@ public class RouteConfig {
                 .route("admin-service", r -> r
                         .path("/api/v1/admin/**")
                         .uri(CORE_HOST))
+
+                // Audit service routes
+                .route("audit-service", r -> r
+                        .path("/api/v1/audit-events/**")
+                        .uri(AUDIT_HOST))
+
+                // Email service routes
+                .route("email-service", r -> r
+                        .path("/api/v1/email-deliveries/**")
+                        .uri(EMAIL_HOST))
 
                 .build();
     }

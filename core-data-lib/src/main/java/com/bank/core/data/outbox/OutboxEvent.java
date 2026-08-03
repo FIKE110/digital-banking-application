@@ -40,7 +40,7 @@ public class OutboxEvent extends AuditModel {
     @Builder.Default
     private int retryCount = 0;
 
-    @Column(name = "valid_until", nullable = false)
+    @Column(name = "valid_until")
     private LocalDateTime validUntil;
 
     @Column(name = "published_at")

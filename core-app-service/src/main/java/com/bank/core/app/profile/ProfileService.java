@@ -4,6 +4,7 @@ import com.bank.common.dto.profile.ChangeEmailRequest;
 import com.bank.common.dto.profile.ChangePasswordRequest;
 import com.bank.common.dto.profile.ProfileResponse;
 import com.bank.common.dto.profile.UpdateProfileRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ProfileService {
 
@@ -14,4 +15,6 @@ public interface ProfileService {
     void changePassword(ChangePasswordRequest request);
 
     void changeEmail(ChangeEmailRequest request);
+
+    String uploadAvatar(MultipartFile file);
 }

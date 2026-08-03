@@ -16,6 +16,9 @@ import java.util.*;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User extends AuditModel implements UserDetails {
 
     @Column(name = "username",unique = true)
@@ -26,8 +29,11 @@ public class User extends AuditModel implements UserDetails {
     private String email;
     @Column(name = "password")
     private String password;
-    @Column(name="last_logout_date")
+    @Column(name = "last_logout_date")
     private LocalDateTime lastLogoutDate;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;

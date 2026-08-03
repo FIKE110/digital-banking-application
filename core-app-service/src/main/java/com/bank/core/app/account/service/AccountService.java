@@ -4,6 +4,8 @@ import com.bank.common.dto.account.AccountBalanceResponse;
 import com.bank.common.dto.account.AccountListResponse;
 import com.bank.common.dto.account.AccountResponse;
 import com.bank.common.dto.account.CreateAccountRequest;
+import com.bank.common.dto.account.DepositRequest;
+import com.bank.common.dto.account.DepositResponse;
 import com.bank.common.dto.account.UpdateAccountStatusRequest;
 
 import java.math.BigDecimal;
@@ -23,4 +25,6 @@ public interface AccountService {
     AccountResponse updateStatus(UUID id, UpdateAccountStatusRequest request);
 
     AccountResponse updateBalance(UUID id, BigDecimal balance);
+
+    DepositResponse deposit(UUID id, DepositRequest request);
 }

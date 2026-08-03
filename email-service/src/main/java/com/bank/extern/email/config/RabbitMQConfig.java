@@ -64,6 +64,34 @@ public class RabbitMQConfig {
     public Binding emailTransactionBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
         return BindingBuilder.bind(emailNotificationQueue)
                 .to(bankingExchange)
-                .with("transfer.transaction_completed");
+                .with("transfer.*");
+    }
+
+    @Bean
+    public Binding emailBillBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
+        return BindingBuilder.bind(emailNotificationQueue)
+                .to(bankingExchange)
+                .with("bill.*");
+    }
+
+    @Bean
+    public Binding emailAccountBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
+        return BindingBuilder.bind(emailNotificationQueue)
+                .to(bankingExchange)
+                .with("account.*");
+    }
+
+    @Bean
+    public Binding emailAdminAlertBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
+        return BindingBuilder.bind(emailNotificationQueue)
+                .to(bankingExchange)
+                .with("admin_alert.*");
+    }
+
+    @Bean
+    public Binding emailAdminAuditBinding(@Qualifier("emailNotificationQueue") Queue emailNotificationQueue, TopicExchange bankingExchange) {
+        return BindingBuilder.bind(emailNotificationQueue)
+                .to(bankingExchange)
+                .with("admin_audit.*");
     }
 }

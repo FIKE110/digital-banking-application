@@ -11,6 +11,7 @@ import com.bank.core.data.transfer.Transfer;
 import com.bank.core.data.transfer.TransferRepository;
 import com.bank.core.data.user.User;
 import com.bank.core.data.user.UserRepository;
+import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -39,6 +40,7 @@ public class TransferServiceImpl implements TransferService {
     private final UserRepository userRepository;
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -115,6 +117,16 @@ public class TransferServiceImpl implements TransferService {
             emitTransferEvent(destAccount, destUser, amount, "credit", destAccount.getBalance(), reference);
         }
 
+        notificationService.notify(currentUser.getId(), "DEBIT", "Transfer sent",
+                amount + " " + sourceAccount.getCurrency() + " sent to account "
+                        + request.getDestinationAccountNumber() + (request.getDescription() != null
+                        && !request.getDescription().isBlank() ? " · " + request.getDescription() : ""));
+        if (destUser != null) {
+            notificationService.notify(destUser.getId(), "CREDIT", "Money received",
+                    amount + " " + destAccount.getCurrency() + " received from account "
+                            + request.getSourceAccountNumber());
+        }
+
         return mapToResponse(savedTransfer);
     }
 
@@ -187,7 +199,7 @@ public class TransferServiceImpl implements TransferService {
         }
 
         // Generate reversal reference
-        String reversalRef = "REV-" + originalTransfer.getReference();
+        String reversalRef = "Reversal: " + originalTransfer.getReference();
 
         // Reverse the balances (debit destination, credit source)
         destAccount.setBalance(destAccount.getBalance().subtract(amount));

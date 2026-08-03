@@ -1,54 +1,141 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { adminListAccounts, adminUpdateAccountStatus } from '../api/admin';
+import { formatMoney } from '../utils/format';
+import { PageHeader } from '../ui/Card';
+import { StatusBadge } from '../ui/Badge';
+import Icon from '../ui/Icon';
+import { SkeletonRows } from '../ui/Skeleton';
+import { EmptyState, ErrorState } from '../ui/States';
+import { useToast } from '../ui/Toast';
+import type { AdminAccount, Paginated } from '../types';
+
+const PAGE_SIZE = 15;
 
 export default function AdminAccounts() {
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const { success, error: toastError } = useToast();
+  const [pageData, setPageData] = useState<Paginated<AdminAccount> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('');
 
-  const fetchAccounts = () => adminListAccounts().then(r => setAccounts(r.data || [])).catch(() => {});
-  useEffect(() => { fetchAccounts(); }, []);
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const params: Record<string, unknown> = { page, size: PAGE_SIZE };
+      if (statusFilter) params.status = statusFilter;
+      const r = await adminListAccounts(params);
+      setPageData(r.data ?? null);
+    } catch (err: any) {
+      setLoadError(err.response?.data?.message || 'Failed to load accounts');
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter]);
+
+  useEffect(() => { fetchAccounts(); }, [fetchAccounts]);
 
   const handleStatusChange = async (id: string, status: string) => {
+    setBusyId(id);
     try {
       await adminUpdateAccountStatus(id, status);
-      fetchAccounts();
-    } catch { alert('Failed to update status'); }
+      success(`Account status set to ${status}`);
+      await fetchAccounts();
+    } catch (err: any) {
+      toastError(err.response?.data?.message || 'Failed to update status');
+    } finally {
+      setBusyId(null);
+    }
   };
 
-  return (
-    <div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, color: '#1e293b' }}>Admin · Account Management</h1>
+  const accounts = pageData?.content ?? [];
+  const totalPages = pageData?.totalPages ?? 0;
 
-      <div style={{ background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr style={{ textAlign: 'left', background: '#f8fafc', fontSize: 13, color: '#64748b' }}>
-            <th style={{ padding: 12 }}>Account</th><th>Name</th><th>Type</th><th>Balance</th><th>Owner</th><th>Status</th><th>Actions</th>
-          </tr></thead>
-          <tbody>
-            {accounts.map((a: any) => (
-              <tr key={a.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                <td style={{ padding: 12, fontFamily: 'monospace', fontSize: 13 }}>{a.accountNumber}</td>
-                <td>{a.accountName}</td>
-                <td>{a.accountType}</td>
-                <td style={{ fontWeight: 600 }}>${a.balance?.toFixed(2)}</td>
-                <td style={{ fontSize: 14 }}>{a.username || a.userId}</td>
-                <td><span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: a.status === 'ACTIVE' ? '#dcfce7' : a.status === 'FROZEN' ? '#fef3c7' : '#f1f5f9', color: a.status === 'ACTIVE' ? '#16a34a' : a.status === 'FROZEN' ? '#d97706' : '#64748b' }}>{a.status}</span></td>
-                <td>
-                  <select
-                    value={a.status}
-                    onChange={e => handleStatusChange(a.id, e.target.value)}
-                    style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e1', fontSize: 13 }}
-                  >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="FROZEN">FROZEN</option>
-                    <option value="CLOSED">CLOSED</option>
-                  </select>
-                </td>
-              </tr>
-            ))}
-            {accounts.length === 0 && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>No accounts found</td></tr>}
-          </tbody>
-        </table>
+  if (loading) return <SkeletonRows rows={7} />;
+  if (loadError) return <ErrorState title="Couldn't load accounts" body={loadError} onRetry={fetchAccounts} />;
+
+  return (
+    <div className="stack" style={{ gap: 24 }}>
+      <PageHeader
+        title="Admin · Account management"
+        subtitle="Review and manage all customer accounts"
+        actions={<span className="badge badge--warning"><Icon name="shield" size={11} /> Administrator</span>}
+      />
+
+      <div className="row" style={{ gap: 8, alignItems: 'center' }}>
+        <select
+          value={statusFilter}
+          onChange={e => { setStatusFilter(e.target.value); setPage(0); }}
+          className="select"
+          style={{ padding: '6px 10px', fontSize: 13 }}
+        >
+          <option value="">All Statuses</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="FROZEN">FROZEN</option>
+          <option value="CLOSED">CLOSED</option>
+        </select>
+        <span className="text-muted" style={{ fontSize: 13 }}>
+          {pageData?.totalElements ?? 0} accounts
+        </span>
       </div>
+
+      <div className="surface" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Balance</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {accounts.map(a => (
+                <tr key={a.id}>
+                  <td className="mono">{a.accountNumber}</td>
+                  <td><span className="font-semibold">{a.accountName}</span></td>
+                  <td>{a.accountType}</td>
+                  <td className="font-semibold tabular">{formatMoney(a.balance, a.currency)}</td>
+                  <td>
+                    <span className="row" style={{ gap: 8 }}>
+                      <span className="avatar avatar--sm">{a.username?.charAt(0)?.toUpperCase() ?? 'U'}</span>
+                      <span>{a.username ?? `User #${a.userId}`}</span>
+                    </span>
+                  </td>
+                  <td><StatusBadge status={a.status} /></td>
+                  <td>
+                    <select
+                      value={a.status}
+                      disabled={busyId === a.id}
+                      onChange={e => handleStatusChange(a.id, e.target.value)}
+                      className="select"
+                      style={{ padding: '6px 10px', fontSize: 13 }}
+                      aria-label={`Set status for ${a.accountName}`}
+                    >
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="FROZEN">FROZEN</option>
+                      <option value="CLOSED">CLOSED</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {accounts.length === 0 && <EmptyState icon="bank" title="No accounts found" body="Accounts opened by customers will appear here." />}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="row" style={{ justifyContent: 'center', gap: 8, alignItems: 'center' }}>
+          <button className="btn btn--ghost btn--sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>Previous</button>
+          <span className="text-muted" style={{ fontSize: 13 }}>Page {page + 1} of {totalPages}</span>
+          <button className="btn btn--ghost btn--sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Next</button>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import client from './client';
+import type { Account, AccountBalance, AccountDetail, ApiResponse, DepositResponse } from '../types';
 
 export const createAccount = (data: {
   accountName: string;
@@ -6,19 +7,16 @@ export const createAccount = (data: {
   currency: string;
   openingBalance: number;
   status: string;
-}) => client.post('/accounts', data).then(r => r.data);
+}) => client.post<ApiResponse<AccountDetail>>('/accounts', data).then(r => r.data);
 
 export const getAccounts = () =>
-  client.get('/accounts').then(r => r.data);
+  client.get<ApiResponse<Account[]>>('/accounts').then(r => r.data);
 
 export const getAccount = (id: string) =>
-  client.get(`/accounts/${id}`).then(r => r.data);
+  client.get<ApiResponse<AccountDetail>>(`/accounts/${id}`).then(r => r.data);
 
 export const getBalance = (id: string) =>
-  client.get(`/accounts/${id}/balance`).then(r => r.data);
+  client.get<ApiResponse<AccountBalance>>(`/accounts/${id}/balance`).then(r => r.data);
 
-export const updateAccountStatus = (id: string, status: string) =>
-  client.patch(`/accounts/${id}/status`, { status }).then(r => r.data);
-
-export const updateBalance = (id: string, balance: number) =>
-  client.patch(`/accounts/${id}/balance`, balance).then(r => r.data);
+export const deposit = (id: string, amount: number, description?: string) =>
+  client.post<ApiResponse<DepositResponse>>(`/accounts/${id}/deposit`, { amount, description }).then(r => r.data);

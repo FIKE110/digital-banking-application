@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -133,6 +134,44 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         return builder.build();
+    }
+
+    @Override
+    @Transactional
+    public String uploadAvatar(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Avatar file is required");
+        }
+        if (file.getSize() > 2 * 1024 * 1024) {
+            throw new IllegalArgumentException("Avatar image must be smaller than 2MB");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Avatar must be an image file");
+        }
+
+        User user = getCurrentUser();
+        String extension = switch (contentType) {
+            case "image/png" -> "png";
+            case "image/webp" -> "webp";
+            case "image/gif" -> "gif";
+            default -> "jpg";
+        };
+        String fileName = user.getId() + "-" + System.currentTimeMillis() + "." + extension;
+
+        try {
+            java.nio.file.Path dir = java.nio.file.Path.of("uploads", "avatars").toAbsolutePath();
+            java.nio.file.Files.createDirectories(dir);
+            java.nio.file.Path target = dir.resolve(fileName);
+            file.transferTo(target.toFile());
+
+            String url = "/uploads/avatars/" + fileName;
+            user.setAvatarUrl(url);
+            userRepository.save(user);
+            return url;
+        } catch (java.io.IOException e) {
+            throw new IllegalArgumentException("Failed to store avatar image", e);
+        }
     }
 
     private User getCurrentUser() {

@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-@SpringBootApplication(scanBasePackages = "com.bank.core")
+@SpringBootApplication(scanBasePackages = {"com.bank.core", "com.bank.common"})
 @EnableWebSecurity
 @EnableJpaRepositories(basePackages = "com.bank.core.data")
 @EntityScan(basePackages = "com.bank.core.data")

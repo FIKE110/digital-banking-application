@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface TransferRepository extends JpaRepository<Transfer, UUID> {
 
     @Query("SELECT t FROM Transfer t WHERE t.sourceAccountNumber IN :accountNumbers " +
-           "OR t.destinationAccountNumber IN :accountNumbers ORDER BY t.createdAt DESC")
+           "OR t.destinationAccountNumber IN :accountNumbers ORDER BY t.createdAt DESC, t.id DESC")
     List<Transfer> findByAccountNumbers(@Param("accountNumbers") List<String> accountNumbers);
 
     Optional<Transfer> findByReference(String reference);

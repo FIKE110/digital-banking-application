@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.bank.common.constant.ApiConstant.API_V1_PATH;
 import static com.bank.common.constant.ApiConstant.PROFILE_BASE;
@@ -49,7 +50,8 @@ public class ProfileController {
     }
 
     @PostMapping("/avatar")
-    public ResponseEntity<ApiResponse<Void>> uploadAvatar() {
-        return ApiResponseUtil.buildSuccess("Avatar uploaded successfully", null);
+    public ResponseEntity<ApiResponse<String>> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        String url = profileService.uploadAvatar(file);
+        return ApiResponseUtil.buildSuccess("Avatar uploaded successfully", url);
     }
 }

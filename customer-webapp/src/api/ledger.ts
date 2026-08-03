@@ -1,10 +1,18 @@
 import client from './client';
+import type { ApiResponse, Paginated, Transaction } from '../types';
 
-export const getTransactions = () =>
-  client.get('/ledger/transactions').then(r => r.data);
+export interface TransactionFilter {
+  page?: number;
+  size?: number;
+  type?: string;
+  accountNumber?: string;
+  from?: string;
+  to?: string;
+  q?: string;
+}
 
-export const getTransaction = (id: string) =>
-  client.get(`/ledger/transactions/${id}`).then(r => r.data);
+export const getTransactions = (params: TransactionFilter = {}) =>
+  client.get<ApiResponse<Paginated<Transaction>>>('/ledger/transactions', { params }).then(r => r.data);
 
 export const getAccountEntries = (accountNumber: string) =>
-  client.get(`/ledger/accounts/${accountNumber}/entries`).then(r => r.data);
+  client.get<ApiResponse<Transaction[]>>(`/ledger/accounts/${accountNumber}/entries`).then(r => r.data);

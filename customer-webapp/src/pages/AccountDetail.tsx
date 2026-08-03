@@ -1,224 +1,214 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getAccount, getBalance, updateBalance } from '../api/accounts';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { getAccount, getBalance, deposit } from '../api/accounts';
 import { getAccountEntries } from '../api/ledger';
+import { formatMoney, formatDate, formatDateTime } from '../utils/format';
+import { PageHeader } from '../ui/Card';
+import Button from '../ui/Button';
+import Dialog from '../ui/Dialog';
+import { Field, Input } from '../ui/FormControls';
+import { StatusBadge, TypeBadge } from '../ui/Badge';
+import Icon from '../ui/Icon';
+import CopyButton from '../ui/CopyButton';
+import { SkeletonRows } from '../ui/Skeleton';
+import { ErrorState, EmptyState } from '../ui/States';
+import { useToast } from '../ui/Toast';
+import type { AccountBalance, AccountDetail, Transaction } from '../types';
 
-export default function AccountDetail() {
+export default function AccountDetailPage() {
   const { id } = useParams();
-  const [account, setAccount] = useState<any>(null);
-  const [balance, setBalanceData] = useState<any>(null);
-  const [entries, setEntries] = useState<any[]>([]);
-  const [showDepositForm, setShowDepositForm] = useState(false);
-  const [depositAmount, setDepositAmount] = useState(0);
+  const { success, error: toastError } = useToast();
+  const [account, setAccount] = useState<AccountDetail | null>(null);
+  const [balance, setBalanceData] = useState<AccountBalance | null>(null);
+  const [entries, setEntries] = useState<Transaction[]>([]);
+  const [loadError, setLoadError] = useState('');
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('');
   const [depositDescription, setDepositDescription] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
-  const [depositError, setDepositError] = useState('');
-  const [depositSuccess, setDepositSuccess] = useState('');
+  const [entriesLoading, setEntriesLoading] = useState(true);
 
-  useEffect(() => {
+  const refreshAccount = useCallback(() => {
     if (!id) return;
-    getAccount(id).then(r => setAccount(r.data)).catch(() => {});
-    getBalance(id).then(r => setBalanceData(r.data)).catch(() => {});
-    // entries need accountNumber - will be available after account loads
+    Promise.all([
+      getAccount(id).then(r => setAccount(r.data)),
+      getBalance(id).then(r => setBalanceData(r.data)),
+    ]).catch(err => setLoadError(err.response?.data?.message || 'Failed to load account details'));
   }, [id]);
 
   useEffect(() => {
+    if (!id) return;
+    refreshAccount();
+  }, [id, refreshAccount]);
+
+  useEffect(() => {
     if (!account?.accountNumber) return;
-    getAccountEntries(account.accountNumber).then(r => setEntries(r.data || [])).catch(() => {});
+    getAccountEntries(account.accountNumber)
+      .then(r => setEntries(r.data || []))
+      .catch(() => {})
+      .finally(() => setEntriesLoading(false));
   }, [account]);
+
+  const currency = account?.currency || balance?.currency || 'NGN';
 
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDepositError('');
-    setDepositSuccess('');
-    
-    if (depositAmount < 1) {
-      setDepositError('Deposit amount must be at least $1.00');
-      return;
-    }
-    
+    if (!id || Number(depositAmount) < 1) return;
     setDepositLoading(true);
     try {
-      const newBalance = (balance?.balance || account.balance) + depositAmount;
-      await updateBalance(id!, newBalance);
-      
-      setDepositSuccess(`Successfully deposited $${depositAmount.toFixed(2)}`);
-      setDepositAmount(0);
+      await deposit(id, Number(depositAmount), depositDescription || undefined);
+      success(`Deposited ${formatMoney(Number(depositAmount), currency)}`);
+      setDepositOpen(false);
+      setDepositAmount('');
       setDepositDescription('');
-      setShowDepositForm(false);
-      
-      // Refresh account and balance data
-      Promise.all([
-        getAccount(id!).then(r => setAccount(r.data)),
-        getBalance(id!).then(r => setBalanceData(r.data))
-      ]);
+      refreshAccount();
     } catch (err: any) {
-      setDepositError(err.response?.data?.message || 'Deposit failed. Please try again.');
+      toastError(err.response?.data?.message || 'Deposit failed. Please try again.');
     } finally {
       setDepositLoading(false);
     }
   };
 
-  if (!account) return <p>Loading...</p>;
+  if (loadError) return <ErrorState title="Couldn't load account" body={loadError} />;
+  if (!account) return <SkeletonRows rows={6} />;
 
   return (
-    <div>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{account.accountName}</h1>
-      <p style={{ color: '#64748b', marginBottom: 24 }}>{account.accountNumber} · {account.accountType} · {account.status}</p>
+    <div className="stack" style={{ gap: 24 }}>
+      <PageHeader
+        title={account.accountName}
+        subtitle={`${account.accountNumber} · ${account.accountType} · opened ${formatDate(account.createdAt)}`}
+        actions={
+          <>
+            <Link to="/accounts" className="btn btn--secondary btn--sm">
+              <Icon name="arrowLeft" size={15} /> All accounts
+            </Link>
+            <Button icon="arrowDownLeft" onClick={() => setDepositOpen(true)}>Deposit</Button>
+          </>
+        }
+      />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8 }}>
-          <p style={{ color: '#64748b', fontSize: 14, margin: 0 }}>Balance</p>
-          <p style={{ fontSize: 28, fontWeight: 700, margin: '4px 0 0' }}>${(balance?.balance ?? account.balance)?.toFixed(2)}</p>
+      <div className="hero">
+        <div className="hero__top">
+          <span className="hero__label">Available balance</span>
+          <StatusBadge status={account.status} />
         </div>
-        <div style={{ background: '#fff', padding: 20, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="hero__balance">{formatMoney(balance?.balance ?? account.balance, currency)}</div>
+        <div className="hero__details">
           <div>
-            <p style={{ color: '#64748b', fontSize: 14, margin: 0 }}>Currency</p>
-            <p style={{ fontSize: 20, fontWeight: 600, margin: '4px 0 0' }}>{account.currency}</p>
+            <div className="hero__stat-label">Account number</div>
+            <div className="row" style={{ gap: 8 }}>
+              <span className="hero__stat-value mono">{account.accountNumber}</span>
+              <CopyButton value={account.accountNumber} label="Copy" copiedLabel="Copied" />
+            </div>
           </div>
-          <button
-            onClick={() => setShowDepositForm(!showDepositForm)}
-            style={{
-              padding: '8px 16px',
-              background: '#16a34a',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#15803d';
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#16a34a';
-              e.currentTarget.style.transform = 'none';
-            }}
-          >
-            Deposit Funds
-          </button>
+          <div>
+            <div className="hero__stat-label">Currency</div>
+            <div className="hero__stat-value">{currency}</div>
+          </div>
+          <div>
+            <div className="hero__stat-label">Account type</div>
+            <div className="hero__stat-value">{account.accountType}</div>
+          </div>
         </div>
       </div>
 
-      {showDepositForm && (
-        <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: 20, marginBottom: 24 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: '#166534', marginBottom: 16 }}>Add Funds to Account</h3>
-          <form onSubmit={handleDeposit} style={{ display: 'flex', gap: 12, alignItems: 'end' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#166534', marginBottom: 6 }}>Amount ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="1"
-                placeholder="Enter amount (min $1.00)"
-                value={depositAmount}
-                onChange={(e) => setDepositAmount(Number(e.target.value))}
-                required
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  border: '1px solid #86efac',
-                  borderRadius: 6,
-                  fontSize: 14,
-                  background: '#fff',
-                }}
-              />
+      <div className="grid-3">
+        <div className="surface stat-card">
+          <div className="stat-card__icon stat-card__icon--success"><Icon name="trending" size={18} /></div>
+          <div>
+            <div className="stat-card__label">Credits</div>
+            <div className="stat-card__value">
+              {formatMoney(entries.filter(t => t.type === 'CREDIT').reduce((s, t) => s + Number(t.amount), 0), currency)}
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#166534', marginBottom: 6 }}>Description (Optional)</label>
-              <input
-                type="text"
-                placeholder="e.g., Payday deposit, Gift, etc."
-                value={depositDescription}
-                onChange={(e) => setDepositDescription(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  border: '1px solid #86efac',
-                  borderRadius: 6,
-                  fontSize: 14,
-                  background: '#fff',
-                }}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={depositLoading || depositAmount < 1}
-              style={{
-                padding: '10px 20px',
-                background: depositLoading || depositAmount < 1 ? '#93c5fd' : '#16a34a',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: depositLoading || depositAmount < 1 ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-              onMouseEnter={(e) => {
-                if (!depositLoading && depositAmount >= 1) {
-                  e.currentTarget.style.background = '#15803d';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#16a34a';
-                e.currentTarget.style.transform = 'none';
-              }}
-            >
-              {depositLoading ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    width: 14, height: 14,
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    borderTopColor: '#fff',
-                    borderRadius: '50%',
-                    animation: 'spin 0.6s linear infinite',
-                    display: 'inline-block',
-                  }} /> Depositing...
-                </span>
-              ) : 'Deposit'}
-            </button>
-          </form>
-          {depositError && (
-            <div style={{ marginTop: 12, padding: '8px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 13 }}>
-              {depositError}
-            </div>
-          )}
-          {depositSuccess && (
-            <div style={{ marginTop: 12, padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, color: '#16a34a', fontSize: 13 }}>
-              {depositSuccess}
-            </div>
-          )}
+          </div>
         </div>
-      )}
-
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Transaction History</h2>
-      <div style={{ background: '#fff', borderRadius: 8, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr style={{ textAlign: 'left', background: '#f8fafc', fontSize: 13, color: '#64748b' }}>
-            <th style={{ padding: 12 }}>Type</th><th>Counterparty</th><th>Amount</th><th>Description</th><th>Date</th>
-          </tr></thead>
-          <tbody>
-            {entries.map((t: any) => (
-              <tr key={t.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                <td style={{ padding: 12, color: t.type === 'CREDIT' ? '#16a34a' : '#dc2626', fontWeight: 600 }}>{t.type}</td>
-                <td>{t.counterpartyAccountNumber}</td>
-                <td>${t.amount?.toFixed(2)}</td>
-                <td style={{ color: '#64748b', fontSize: 14 }}>{t.description || '-'}</td>
-                <td style={{ fontSize: 14 }}>{new Date(t.createdAt).toLocaleDateString()}</td>
-              </tr>
-            ))}
-            {entries.length === 0 && <tr><td colSpan={5} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>No transactions yet</td></tr>}
-          </tbody>
-        </table>
+        <div className="surface stat-card">
+          <div className="stat-card__icon stat-card__icon--danger"><Icon name="receipt" size={18} /></div>
+          <div>
+            <div className="stat-card__label">Debits</div>
+            <div className="stat-card__value">
+              {formatMoney(entries.filter(t => t.type === 'DEBIT').reduce((s, t) => s + Number(t.amount), 0), currency)}
+            </div>
+          </div>
+        </div>
+        <div className="surface stat-card">
+          <div className="stat-card__icon stat-card__icon--info"><Icon name="transactions" size={18} /></div>
+          <div>
+            <div className="stat-card__label">Transactions</div>
+            <div className="stat-card__value">{entries.length}</div>
+          </div>
+        </div>
       </div>
+
+      <div className="surface" style={{ padding: 'var(--space-5)' }}>
+        <div className="page-header" style={{ marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700 }}>Transaction history</h3>
+          </div>
+          <Link to="/transactions" className="btn btn--ghost btn--sm">
+            View all <Icon name="chevronRight" size={14} />
+          </Link>
+        </div>
+        {entriesLoading ? (
+          <SkeletonRows rows={4} />
+        ) : entries.length === 0 ? (
+          <EmptyState icon="receipt" title="No transactions yet" body="Activity on this account will appear here." />
+        ) : (
+          <div className="stack" style={{ gap: 2 }}>
+            {entries.slice(0, 10).map(t => {
+              const credit = t.type === 'CREDIT';
+              return (
+                <div key={t.id} className="tx-row">
+                  <span className={`tx-row__icon ${credit ? 'tx-row__icon--credit' : 'tx-row__icon--debit'}`}>
+                    <Icon name={credit ? 'arrowDownLeft' : 'arrowUpRight'} size={16} />
+                  </span>
+                  <span className="tx-row__body">
+                    <span className="tx-row__title">{t.description || (credit ? 'Money received' : 'Payment sent')}</span>
+                    <span className="tx-row__meta" style={{ marginTop: 10 }}>{formatDateTime(t.createdAt)} · {t.reference?.slice(0, 12) ?? '—'}</span>
+                  </span>
+                  <TypeBadge type={t.type} />
+                  <span className={`tx-row__amount ${credit ? 'tx-row__amount--credit' : 'tx-row__amount--debit'}`}>
+                    {credit ? '+' : '−'}{formatMoney(t.amount, currency)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <Dialog
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        title="Deposit money"
+        subtitle={`Credit funds to ${account.accountName} (${account.accountNumber})`}
+      >
+        <form onSubmit={handleDeposit} className="stack stack--4">
+          <Field label={`Amount (${currency})`} hint="Minimum deposit is 1.00">
+            <Input
+              type="number"
+              min={1}
+              step={0.01}
+              placeholder="0.00"
+              value={depositAmount}
+              onChange={e => setDepositAmount(e.target.value)}
+              required
+              suffix={currency}
+            />
+          </Field>
+          <Field label="Description (optional)">
+            <Input
+              placeholder="e.g. Payday deposit, gift…"
+              value={depositDescription}
+              onChange={e => setDepositDescription(e.target.value)}
+            />
+          </Field>
+          <div className="row" style={{ justifyContent: 'flex-end' }}>
+            <Button variant="secondary" type="button" onClick={() => setDepositOpen(false)}>Cancel</Button>
+            <Button type="submit" loading={depositLoading}>Deposit</Button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 }

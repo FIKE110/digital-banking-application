@@ -25,6 +25,19 @@ public final class ApiConstant {
     public static final String ACCOUNT_ID = ACCOUNT_BASE + "/{id}";
     public static final String ACCOUNT_BALANCE = ACCOUNT_BASE + "/{id}/balance";
     public static final String ACCOUNT_STATUS = ACCOUNT_BASE + "/{id}/status";
+    public static final String ACCOUNT_DEPOSIT = ACCOUNT_BASE + "/{id}/deposit";
+
+    // -- Beneficiaries --
+    public static final String BENEFICIARY_BASE = "/beneficiaries";
+
+    // -- Bills --
+    public static final String BILL_BASE = "/bills";
+    public static final String BILL_PAY = BILL_BASE + "/pay";
+    public static final String BILL_PAYMENTS = BILL_BASE + "/payments";
+    public static final String BILL_CATALOG = BILL_BASE + "/catalog";
+
+    // -- Cards --
+    public static final String CARD_BASE = "/cards";
 
     // -- Transfers --
     public static final String TRANSFER_BASE = "/transfers";
@@ -37,6 +50,13 @@ public final class ApiConstant {
     public static final String LEDGER_TRANSACTIONS = LEDGER_BASE + "/transactions";
     public static final String LEDGER_TRANSACTION_ID = LEDGER_BASE + "/transactions/{id}";
     public static final String LEDGER_ACCOUNT_ENTRIES = LEDGER_BASE + "/accounts/{id}/entries";
+
+    // -- Notifications --
+    public static final String NOTIFICATION_BASE = "/notifications";
+    public static final String NOTIFICATION_UNREAD_COUNT = NOTIFICATION_BASE + "/unread-count";
+    public static final String NOTIFICATION_READ = NOTIFICATION_BASE + "/{id}/read";
+    public static final String NOTIFICATION_READ_ALL = NOTIFICATION_BASE + "/read-all";
+    public static final String NOTIFICATION_PREFERENCES = NOTIFICATION_BASE + "/preferences";
 
     // -- Profile --
     public static final String PROFILE_BASE = "/profile";

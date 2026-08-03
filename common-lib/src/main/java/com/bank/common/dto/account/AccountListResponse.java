@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -21,5 +22,9 @@ public class AccountListResponse {
 
     private BigDecimal balance;
 
+    private String currency;
+
     private String status;
+
+    private LocalDateTime createdAt;
 }

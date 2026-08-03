@@ -46,8 +46,9 @@ public class OutboxService {
     @Transactional
     public void processPendingEvents() {
         List<OutboxEvent> events = outboxEventRepository
-                .findTop100ByStatusAndValidUntilAfterOrderByCreatedAtAsc(
-                        OutboxStatus.PENDING, LocalDateTime.now());
+                .findDue(OutboxStatus.PENDING, LocalDateTime.now()).stream()
+                .limit(100)
+                .toList();
 
         for (OutboxEvent event : events) {
             try {
@@ -65,8 +66,7 @@ public class OutboxService {
             } catch (Exception e) {
                 log.error("Failed to publish outbox event {}: {}", event.getId(), e.getMessage());
                 event.setRetryCount(event.getRetryCount() + 1);
-                if (event.getRetryCount() >= MAX_RETRIES
-                        || LocalDateTime.now().isAfter(event.getValidUntil())) {
+                if (event.getRetryCount() >= MAX_RETRIES) {
                     event.setStatus(OutboxStatus.FAILED);
                     log.warn("Outbox event {} marked as FAILED after {} retries", event.getId(), event.getRetryCount());
                 }

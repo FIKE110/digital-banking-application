@@ -10,6 +10,7 @@ import com.bank.common.dto.auth.Token;
 import com.bank.common.dto.auth.UserResponseDto;
 import com.bank.common.enums.OtpType;
 import com.bank.common.exception.CustomException;
+import com.bank.common.exception.DuplicateResourceException;
 import com.bank.core.app.user.UserDetailsServiceImpl;
 import com.bank.core.data.role.Role;
 import com.bank.core.data.role.RoleRepository;
@@ -17,6 +18,7 @@ import com.bank.core.data.user.User;
 import com.bank.core.data.user.UserRepository;
 import com.bank.core.data.user.otp.UserOtp;
 import com.bank.core.data.user.otp.UserOtpRepository;
+import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
 import com.bank.core.lib.service.JwtService;
 import com.github.f4b6a3.ulid.UlidCreator;
@@ -55,6 +57,7 @@ public class AuthService {
     private final UserOtpRepository userOtpRepository;
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
+    private final NotificationService notificationService;
 
     @Transactional
     public LoginResponseDto loginUser(LoginRequestDto loginRequestDto) {
@@ -67,6 +70,12 @@ public class AuthService {
         Token token= new Token();
         token.setAccessToken(jwtService.generateAccessToken(authentication));
         token.setRefreshToken(jwtService.generateRefreshToken(authentication));
+
+        if (authentication.getPrincipal() instanceof User user) {
+            notificationService.notify(user.getId(), "SECURITY", "New sign-in detected",
+                    "Your account was signed in to from a new device. If this was you, no action is needed.");
+        }
+
         return LoginResponseDto.builder()
                 .token(token)
                 .build();
@@ -75,6 +84,14 @@ public class AuthService {
 
     @Transactional
     public void signupUser(SignupRequestDto dto) {
+
+        if (userRepository.existsByUsername(dto.getUsername())) {
+            throw new DuplicateResourceException("Username already taken: " + dto.getUsername());
+        }
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new DuplicateResourceException("Email already taken: " + dto.getEmail());
+        }
 
         Role role=roleRepository.findByName("ROLE_USER").orElseThrow(()->new CustomException(ErrorConstant.NOT_FOUND_MSG,"Role not found"));
 
@@ -95,7 +112,7 @@ public class AuthService {
             payload.put("name", user.getUsername());
             outboxService.saveEvent("USER", user.getUid(), "USER_REGISTERED",
                     objectMapper.writeValueAsString(payload),
-                    LocalDateTime.now().plusMinutes(10));
+                    LocalDateTime.now().plusYears(100));
         } catch (Exception e) {
             throw new CustomException(ErrorConstant.INTERNAL_SERVER_ERROR, "Failed to serialize outbox payload");
         }

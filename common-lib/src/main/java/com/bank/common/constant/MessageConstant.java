@@ -85,6 +85,26 @@ public final class MessageConstant {
     public static final String SUCCESS = "Request completed successfully";
 
     // =========================
+    // DEPOSIT MESSAGES
+    // =========================
+    public static final String DEPOSIT_SUCCESS = "Deposit completed successfully";
+
+    // =========================
+    // BENEFICIARY MESSAGES
+    // =========================
+    public static final String BENEFICIARY_CREATED = "Beneficiary added successfully";
+    public static final String BENEFICIARIES_FETCHED = "Beneficiaries fetched successfully";
+    public static final String BENEFICIARY_DELETED = "Beneficiary deleted successfully";
+    public static final String BENEFICIARY_NOT_FOUND = "Beneficiary not found";
+
+    // =========================
+    // BILL PAYMENT MESSAGES
+    // =========================
+    public static final String BILL_PAYMENT_COMPLETED = "Bill payment completed successfully";
+    public static final String BILL_PAYMENTS_FETCHED = "Bill payments fetched successfully";
+    public static final String BILL_PAYMENT_NOT_FOUND = "Bill payment not found";
+
+    // =========================
     // PROFILE MESSAGES
     // =========================
     public static final String PROFILE_FETCHED = "Profile fetched successfully";

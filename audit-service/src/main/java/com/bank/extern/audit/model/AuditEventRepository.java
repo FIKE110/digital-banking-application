@@ -1,6 +1,9 @@
 package com.bank.extern.audit.model;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface AuditEventRepository extends JpaRepository<AuditEvent, Long> {
+import java.util.UUID;
+
+public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID>, JpaSpecificationExecutor<AuditEvent> {
 }

@@ -4,6 +4,8 @@ import com.bank.common.dto.account.AccountBalanceResponse;
 import com.bank.common.dto.account.AccountListResponse;
 import com.bank.common.dto.account.AccountResponse;
 import com.bank.common.dto.account.CreateAccountRequest;
+import com.bank.common.dto.account.DepositRequest;
+import com.bank.common.dto.account.DepositResponse;
 import com.bank.common.dto.account.UpdateAccountStatusRequest;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
@@ -58,6 +60,14 @@ public class AccountController {
             @Valid @RequestBody UpdateAccountStatusRequest request) {
         AccountResponse updated = accountService.updateStatus(id, request);
         return ApiResponseUtil.buildSuccess("Account status updated successfully", updated);
+    }
+
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<ApiResponse<DepositResponse>> deposit(
+            @PathVariable UUID id,
+            @Valid @RequestBody DepositRequest request) {
+        DepositResponse response = accountService.deposit(id, request);
+        return ApiResponseUtil.buildSuccess(HttpStatus.CREATED.value(), "Deposit completed successfully", response);
     }
 
     @PatchMapping("/{id}/balance")

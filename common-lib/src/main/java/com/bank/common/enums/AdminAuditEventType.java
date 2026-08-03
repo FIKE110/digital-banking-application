@@ -1,0 +1,103 @@
+package com.bank.common.enums;
+
+public enum AdminAuditEventType {
+
+    // Customer management
+    CUSTOMER_VIEWED("CUSTOMER_VIEWED", "LOW"),
+    CUSTOMER_SEARCHED("CUSTOMER_SEARCHED", "LOW"),
+    CUSTOMER_PROFILE_MODIFIED("CUSTOMER_PROFILE_MODIFIED", "MEDIUM"),
+    CUSTOMER_SUSPENDED("CUSTOMER_SUSPENDED", "HIGH"),
+    CUSTOMER_ACTIVATED("CUSTOMER_ACTIVATED", "HIGH"),
+    CUSTOMER_DELETED("CUSTOMER_DELETED", "CRITICAL"),
+    CUSTOMER_ACCOUNT_UNLOCKED("CUSTOMER_ACCOUNT_UNLOCKED", "MEDIUM"),
+
+    // Financial actions
+    MANUAL_TRANSFER_APPROVED("MANUAL_TRANSFER_APPROVED", "HIGH"),
+    TRANSFER_REJECTED("TRANSFER_REJECTED", "HIGH"),
+    TRANSACTION_REVERSED("TRANSACTION_REVERSED", "HIGH"),
+    MANUAL_DEBIT("MANUAL_DEBIT", "CRITICAL"),
+    MANUAL_CREDIT("MANUAL_CREDIT", "CRITICAL"),
+    REFUND_PROCESSED("REFUND_PROCESSED", "HIGH"),
+    FEE_ADJUSTED("FEE_ADJUSTED", "MEDIUM"),
+    BALANCE_ADJUSTED("BALANCE_ADJUSTED", "CRITICAL"),
+    TRANSACTION_LIMIT_CHANGED("TRANSACTION_LIMIT_CHANGED", "HIGH"),
+
+    // Account actions
+    ACCOUNT_OPENED("ACCOUNT_OPENED", "MEDIUM"),
+    ACCOUNT_CLOSED("ACCOUNT_CLOSED", "HIGH"),
+    ACCOUNT_FROZEN("ACCOUNT_FROZEN", "HIGH"),
+    ACCOUNT_UNFROZEN("ACCOUNT_UNFROZEN", "HIGH"),
+    ACCOUNT_STATUS_CHANGED("ACCOUNT_STATUS_CHANGED", "HIGH"),
+    ACCOUNT_LIMIT_CHANGED("ACCOUNT_LIMIT_CHANGED", "HIGH"),
+
+    // Beneficiary actions
+    BENEFICIARY_CREATED("BENEFICIARY_CREATED", "LOW"),
+    BENEFICIARY_MODIFIED("BENEFICIARY_MODIFIED", "MEDIUM"),
+    BENEFICIARY_DELETED("BENEFICIARY_DELETED", "MEDIUM"),
+
+    // Card actions
+    CARD_FROZEN("CARD_FROZEN", "HIGH"),
+    CARD_UNFROZEN("CARD_UNFROZEN", "HIGH"),
+    CARD_REPLACED("CARD_REPLACED", "HIGH"),
+    CARD_LIMIT_CHANGED("CARD_LIMIT_CHANGED", "HIGH"),
+    PIN_RESET("PIN_RESET", "CRITICAL"),
+
+    // Access control
+    ADMIN_CREATED("ADMIN_CREATED", "CRITICAL"),
+    ADMIN_DISABLED("ADMIN_DISABLED", "CRITICAL"),
+    ADMIN_ROLE_CHANGED("ADMIN_ROLE_CHANGED", "CRITICAL"),
+    PERMISSION_GRANTED("PERMISSION_GRANTED", "CRITICAL"),
+    PERMISSION_REVOKED("PERMISSION_REVOKED", "CRITICAL"),
+    ROLE_CREATED("ROLE_CREATED", "CRITICAL"),
+    ROLE_DELETED("ROLE_DELETED", "CRITICAL"),
+
+    // Security
+    MFA_DISABLED("MFA_DISABLED", "CRITICAL"),
+    PASSWORD_RESET("PASSWORD_RESET", "HIGH"),
+    SECURITY_SETTINGS_CHANGED("SECURITY_SETTINGS_CHANGED", "HIGH"),
+    CUSTOMER_AUTH_BYPASSED("CUSTOMER_AUTH_BYPASSED", "CRITICAL"),
+
+    // Audit actions
+    AUDIT_SEARCHED("AUDIT_SEARCHED", "LOW"),
+    AUDIT_EVENT_VIEWED("AUDIT_EVENT_VIEWED", "LOW"),
+    AUDIT_EXPORT_GENERATED("AUDIT_EXPORT_GENERATED", "MEDIUM"),
+    AUDIT_REPORT_GENERATED("AUDIT_REPORT_GENERATED", "MEDIUM"),
+
+    // System
+    SYSTEM_CONFIG_CHANGED("SYSTEM_CONFIG_CHANGED", "CRITICAL"),
+    DATA_EXPORTED("DATA_EXPORTED", "HIGH"),
+    BULK_ACTION_PERFORMED("BULK_ACTION_PERFORMED", "HIGH");
+
+    private final String code;
+    private final String riskLevel;
+
+    AdminAuditEventType(String code, String riskLevel) {
+        this.code = code;
+        this.riskLevel = riskLevel;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public boolean isHighRisk() {
+        return "HIGH".equals(riskLevel) || "CRITICAL".equals(riskLevel);
+    }
+
+    public boolean requiresNotification() {
+        return "CRITICAL".equals(riskLevel);
+    }
+
+    public static AdminAuditEventType fromCode(String code) {
+        for (AdminAuditEventType type : values()) {
+            if (type.code.equalsIgnoreCase(code)) {
+                return type;
+            }
+        }
+        return null;
+    }
+}
