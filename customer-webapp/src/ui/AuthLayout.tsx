@@ -4,9 +4,9 @@ import { useTheme } from './Theme';
 import { BANK_NAME, BANK_TAG } from '../config';
 
 const FEATURES = [
-  { icon: 'shield', title: 'Bank-grade security', body: 'Encrypted sessions, secure tokens and continuous monitoring.' },
-  { icon: 'send', title: 'Instant transfers', body: 'Move money between accounts and beneficiaries in seconds.' },
-  { icon: 'card', title: 'Cards that work', body: 'Virtual and physical cards with full control over limits and PIN.' },
+  { icon: 'shield', title: 'Secure by default', body: 'Your sign-ins and sessions are encrypted and monitored.' },
+  { icon: 'send', title: 'Fast transfers', body: 'Send money to accounts and saved beneficiaries in seconds.' },
+  { icon: 'card', title: 'Cards with control', body: 'Virtual and physical cards, with limits and PIN you control.' },
 ];
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -43,10 +43,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div style={{ margin: 'auto 0', position: 'relative', zIndex: 1, maxWidth: 400 }}>
           <h1 style={{ fontSize: 34, fontWeight: 500, fontFamily: 'var(--font-display)', letterSpacing: '-0.01em', lineHeight: 1.2, margin: '0 0 12px' }}>
-            Banking that moves at the speed of you.
+            Simple banking.
           </h1>
           <p style={{ fontSize: 15, color: 'var(--hero-text-2)', margin: 0, lineHeight: 1.6 }}>
-            One secure home for your accounts, cards, transfers and payments — on every device.
+            Accounts, cards, transfers and payments in one place.
           </p>
 
           <div className="stack" style={{ gap: 18, marginTop: 36 }}>
@@ -65,7 +65,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         <div style={{ position: 'relative', zIndex: 1, fontSize: 12, color: 'var(--hero-text-2)' }}>
-          © {new Date().getFullYear()} {BANK_NAME} · Licensed digital banking provider
+          © {new Date().getFullYear()} {BANK_NAME}
         </div>
       </div>
 
