@@ -42,7 +42,7 @@ export default function AdminLogin() {
     <AuthLayout>
       <div style={{ marginBottom: 28 }}>
         <div className="brand__logo" style={{ width: 52, height: 52, fontSize: 22, marginBottom: 20, background: '#000000' }}>
-          <span style={{ color: '#00c853' }}>A</span>
+          <span style={{ color: '#00c853' }}>5</span>
         </div>
         <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: "var(--font-display)", letterSpacing: "0.01em", margin: '0 0 6px' }}>
           Admin Access

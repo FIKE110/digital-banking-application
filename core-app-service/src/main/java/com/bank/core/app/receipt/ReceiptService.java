@@ -106,6 +106,30 @@ public class ReceiptService {
         return render(values);
     }
 
+    public byte[] depositReceipt(Transaction transaction) {
+        Map<String, String> values = new HashMap<>();
+        values.put("bankName", bankName);
+        values.put("bankTagline", bankTagline);
+        values.put("bankSupportEmail", supportEmail);
+        values.put("bankWebsite", website);
+        values.put("receiptTitle", "Deposit Receipt");
+        values.put("reference", transaction.getReference());
+        values.put("date", transaction.getCreatedAt() != null ? transaction.getCreatedAt().format(DATE_FORMAT) : "—");
+        values.put("status", transaction.getStatus());
+        values.put("statusClass", isPending(transaction.getStatus()) ? "pending" : "");
+        values.put("currency", accountCurrency(transaction.getAccountNumber()));
+
+        StringBuilder rows = new StringBuilder();
+        rows.append(accountRow("Account", transaction.getAccountNumber()));
+        if (transaction.getDescription() != null && !transaction.getDescription().isBlank()) {
+            rows.append(row("Description", escapeHtml(transaction.getDescription())));
+        }
+        values.put("extraRows", rows.toString());
+        values.put("amount", money(transaction.getAmount()));
+
+        return render(values);
+    }
+
     public byte[] statement(String accountNumber, YearMonth month) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNumber));

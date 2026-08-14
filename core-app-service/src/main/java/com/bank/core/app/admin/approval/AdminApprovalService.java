@@ -154,7 +154,7 @@ public class AdminApprovalService {
     @Transactional
     public void expirePendingApprovals() {
         List<AdminApproval> expired = approvalRepository.findByStatusAndExpiresAtBefore(
-                ApprovalStatus.PENDING.name(), LocalDateTime.now());
+                ApprovalStatus.PENDING, LocalDateTime.now());
         for (AdminApproval approval : expired) {
             approval.setStatus(ApprovalStatus.EXPIRED);
             approvalRepository.save(approval);

@@ -2,6 +2,8 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
 const client = axios.create({ baseURL: '/api/v1' });
 
+const plainClient = axios.create({ baseURL: '/api/v1' });
+
 interface RetriableConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -25,7 +27,7 @@ export async function refreshAccessToken(): Promise<string> {
     refreshPromise = (async () => {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) throw new Error('No refresh token available');
-      const { data } = await client.post('/auth/refresh', null, {
+      const { data } = await plainClient.post('/auth/refresh', null, {
         params: { token: refreshToken },
       });
       const accessToken: string = data.data.token.accessToken;

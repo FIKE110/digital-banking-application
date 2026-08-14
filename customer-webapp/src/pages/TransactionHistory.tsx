@@ -10,9 +10,12 @@ import { StatusBadge, TypeBadge } from '../ui/Badge';
 import Icon from '../ui/Icon';
 import CopyButton from '../ui/CopyButton';
 import { EmptyState, ErrorState } from '../ui/States';
+import { useToast } from '../ui/Toast';
+import { downloadTransferReceiptByReference, downloadBillReceiptByReference, downloadDepositReceipt } from '../api/receipts';
 import type { Account, Paginated, Transaction } from '../types';
 
 export default function TransactionHistory() {
+  const { error: toastError } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [page, setPage] = useState<Paginated<Transaction> | null>(null);
   const [typeFilter, setTypeFilter] = useState('');
@@ -24,6 +27,27 @@ export default function TransactionHistory() {
   const [currentPage, setCurrentPage] = useState(0);
   const [loadError, setLoadError] = useState('');
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [receiptBusyId, setReceiptBusyId] = useState<string | null>(null);
+
+  const downloadReceipt = async (t: Transaction) => {
+    setReceiptBusyId(t.id);
+    try {
+      const isDeposit = t.type === 'CREDIT' && !t.counterpartyAccountNumber;
+      if (isDeposit) {
+        await downloadDepositReceipt(t.reference, t.accountNumber);
+      } else {
+        try {
+          await downloadTransferReceiptByReference(t.reference);
+        } catch {
+          await downloadBillReceiptByReference(t.reference);
+        }
+      }
+    } catch (err: any) {
+      toastError(err.response?.data?.message || 'No receipt available for this transaction');
+    } finally {
+      setReceiptBusyId(null);
+    }
+  };
 
   useEffect(() => {
     getAccounts().then(r => setAccounts(r.data ?? [])).catch(() => {});
@@ -150,9 +174,23 @@ export default function TransactionHistory() {
                   <td><StatusBadge status={t.status} /></td>
                   <td className="muted text-sm">{formatDateTime(t.createdAt)}</td>
                   <td>
-                    <button className="icon-btn" style={{ width: 32, height: 32 }} aria-label="View transaction" onClick={(e) => { e.stopPropagation(); setSelected(t); }}>
-                      <Icon name="chevronRight" size={15} />
-                    </button>
+                    <div className="row" style={{ gap: 6, justifyContent: 'flex-end' }}>
+                      {t.status === 'COMPLETED' && (
+                        <button
+                          className="icon-btn"
+                          style={{ width: 32, height: 32 }}
+                          aria-label="Download receipt"
+                          title="Download receipt (PDF)"
+                          disabled={receiptBusyId === t.id}
+                          onClick={(e) => { e.stopPropagation(); downloadReceipt(t); }}
+                        >
+                          <Icon name="download" size={15} />
+                        </button>
+                      )}
+                      <button className="icon-btn" style={{ width: 32, height: 32 }} aria-label="View transaction" onClick={(e) => { e.stopPropagation(); setSelected(t); }}>
+                        <Icon name="chevronRight" size={15} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -228,6 +266,16 @@ export default function TransactionHistory() {
                 <StatusBadge status={selected.status} />
               </div>
             </div>
+            {selected.status === 'COMPLETED' && (
+              <Button
+                variant="secondary"
+                icon="download"
+                loading={receiptBusyId === selected.id}
+                onClick={() => downloadReceipt(selected)}
+              >
+                Download receipt (PDF)
+              </Button>
+            )}
           </div>
         )}
       </Dialog>

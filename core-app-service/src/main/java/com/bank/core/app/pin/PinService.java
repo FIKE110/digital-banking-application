@@ -75,12 +75,12 @@ public class PinService {
             throw new IllegalStateException("Transaction PIN not set. Please create one in Settings → Security PIN.");
         }
 
-        if (user.getPinAttempts() >= PIN_ATTEMPTS_LIMIT) {
+        if (user.getPinAttempts() != null && user.getPinAttempts() >= PIN_ATTEMPTS_LIMIT) {
             throw new IllegalStateException("Too many PIN attempts. Please reset your PIN or contact support.");
         }
 
         if (!passwordEncoder.matches(request.getPin(), user.getTransactionPin())) {
-            user.setPinAttempts(user.getPinAttempts() + 1);
+            user.setPinAttempts((user.getPinAttempts() == null ? 0 : user.getPinAttempts()) + 1);
             userRepository.save(user);
             log.warn("Failed PIN verification for user {}", user.getUsername());
             throw new IllegalStateException("Incorrect transaction PIN");

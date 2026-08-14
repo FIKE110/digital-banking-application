@@ -198,6 +198,23 @@ export default function Transfers() {
                 </div>
               </div>
               <div className="row" style={{ justifyContent: 'center', marginTop: 24 }}>
+                <Button
+                  variant="secondary"
+                  icon="download"
+                  loading={receiptBusy}
+                  onClick={async () => {
+                    setReceiptBusy(true);
+                    try {
+                      await downloadTransferReceipt(completed.id);
+                    } catch (err: any) {
+                      toastError(err.response?.data?.message || 'Receipt download failed');
+                    } finally {
+                      setReceiptBusy(false);
+                    }
+                  }}
+                >
+                  Download receipt (PDF)
+                </Button>
                 <Button onClick={startNew}>Send another transfer</Button>
               </div>
             </div>

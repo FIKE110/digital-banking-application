@@ -32,6 +32,9 @@ public class EmailNotificationListener {
     @Value("${app.bank.website:5ive.bank}")
     private String website;
 
+    @Value("${app.bank.login-url:http://localhost:5173}")
+    private String loginUrl;
+
     @RabbitListener(queues = "${app.rabbitmq.queue.notification:email.notification.queue}")
     public void handleNotification(String message) {
         try {
@@ -62,6 +65,7 @@ public class EmailNotificationListener {
         variables.put("bankName", bankName);
         variables.put("supportEmail", supportEmail);
         variables.put("website", website);
+        variables.put("loginUrl", loginUrl);
         return variables;
     }
 

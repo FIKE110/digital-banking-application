@@ -34,7 +34,7 @@ public class User extends AuditModel implements UserDetails {
     @Column(name = "pin_set_at")
     private LocalDateTime pinSetAt;
     @Column(name = "pin_attempts")
-    private int pinAttempts;
+    private Integer pinAttempts;
     @Column(name = "last_logout_date")
     private LocalDateTime lastLogoutDate;
 

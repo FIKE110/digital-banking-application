@@ -32,7 +32,7 @@ export default function Register() {
   return (
     <AuthLayout>
       <div style={{ marginBottom: 28 }}>
-        <div className="brand__logo" style={{ width: 52, height: 52, fontSize: 22, marginBottom: 20 }}>A</div>
+        <div className="brand__logo" style={{ width: 52, height: 52, fontSize: 22, marginBottom: 20 }}>5</div>
         <h1 style={{ fontSize: 28, fontWeight: 800, fontFamily: "var(--font-display)", letterSpacing: "0.01em", margin: '0 0 6px' }}>
           Create your account
         </h1>

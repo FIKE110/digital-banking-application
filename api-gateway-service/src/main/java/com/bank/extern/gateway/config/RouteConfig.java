@@ -52,6 +52,21 @@ public class RouteConfig {
                         .path("/api/v1/bills/**")
                         .uri(CORE_HOST))
 
+                // Transaction PIN routes (user)
+                .route("pin-service", r -> r
+                        .path("/api/v1/pin/**")
+                        .uri(CORE_HOST))
+
+                // KYC routes (user)
+                .route("kyc-service", r -> r
+                        .path("/api/v1/kyc/**")
+                        .uri(CORE_HOST))
+
+                // Receipt routes (user, PDF downloads)
+                .route("receipt-service", r -> r
+                        .path("/api/v1/receipts/**")
+                        .uri(CORE_HOST))
+
                 // Card routes (user)
                 .route("card-service", r -> r
                         .path("/api/v1/cards/**")
