@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAccount, getBalance, deposit } from '../api/accounts';
 import { getAccountEntries } from '../api/ledger';
+import { downloadStatement } from '../api/receipts';
 import { formatMoney, formatDate, formatDateTime } from '../utils/format';
 import { PageHeader } from '../ui/Card';
 import Button from '../ui/Button';
@@ -83,6 +84,21 @@ export default function AccountDetailPage() {
               <Icon name="arrowLeft" size={15} /> All accounts
             </Link>
             <Button icon="arrowDownLeft" onClick={() => setDepositOpen(true)}>Deposit</Button>
+            <Button
+              variant="secondary"
+              icon="download"
+              disabled={!account.accountNumber}
+              onClick={async () => {
+                try {
+                  await downloadStatement(account.accountNumber);
+                  success('Statement downloaded');
+                } catch (err: any) {
+                  toastError(err.response?.data?.message || 'Statement download failed');
+                }
+              }}
+            >
+              Statement
+            </Button>
           </>
         }
       />

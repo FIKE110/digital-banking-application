@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getAccounts } from '../api/accounts';
 import { payBill, getBillPayments, getBillerCatalog } from '../api/bills';
+import { downloadBillReceipt } from '../api/receipts';
 import { formatMoney, formatDateTime } from '../utils/format';
 import { PageHeader } from '../ui/Card';
 import Button from '../ui/Button';
@@ -81,7 +82,9 @@ export default function Bills() {
   const [customerReference, setCustomerReference] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [pin, setPin] = useState('');
   const [busy, setBusy] = useState(false);
+  const [receiptBusyId, setReceiptBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -116,6 +119,7 @@ export default function Bills() {
         customerReference,
         amount: Number(amount),
         description: description || undefined,
+        pin,
       });
       success(`Payment to ${selectedProvider} initiated`);
       setSelectedProvider(null);
@@ -123,6 +127,7 @@ export default function Bills() {
       setCustomerReference('');
       setAmount('');
       setDescription('');
+      setPin('');
       const res = await getBillPayments();
       setPayments(res.data ?? []);
     } catch (err: any) {
@@ -244,6 +249,19 @@ export default function Bills() {
           <Field label="Description (optional)">
             <Input placeholder="e.g. December electricity bill" value={description} onChange={e => setDescription(e.target.value)} />
           </Field>
+          <Field label="Transaction PIN">
+            <Input
+              type="password"
+              inputMode="numeric"
+              pattern="\d*"
+              maxLength={4}
+              value={pin}
+              onChange={e => setPin(e.target.value)}
+              placeholder="Enter your 4-digit PIN"
+              autoComplete="off"
+              required
+            />
+          </Field>
           <div className="row" style={{ justifyContent: 'flex-end' }}>
             <Button variant="secondary" type="button" onClick={() => setSelectedProvider(null)}>Cancel</Button>
             <Button type="submit" loading={busy} icon="zap">Pay {selectedProvider}</Button>
@@ -272,6 +290,27 @@ export default function Bills() {
                 </span>
                 <span className="tx-row__meta hidden-mobile mono">{p.sourceAccountNumber}</span>
                 <StatusBadge status={p.status} />
+                <button
+                  type="button"
+                  className="icon-btn"
+                  title="Download receipt (PDF)"
+                  aria-label="Download receipt"
+                  disabled={receiptBusyId === p.id}
+                  onClick={async e => {
+                    e.stopPropagation();
+                    setReceiptBusyId(p.id);
+                    try {
+                      await downloadBillReceipt(p.id);
+                      success('Receipt downloaded');
+                    } catch (err: any) {
+                      toastError(err.response?.data?.message || 'Receipt download failed');
+                    } finally {
+                      setReceiptBusyId(null);
+                    }
+                  }}
+                >
+                  <Icon name="download" size={15} />
+                </button>
                 <span className="tx-row__amount tx-row__amount--debit">
                   −{formatMoney(p.amount, paymentCurrency(p))}
                 </span>

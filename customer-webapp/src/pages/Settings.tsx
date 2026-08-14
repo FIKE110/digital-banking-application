@@ -105,6 +105,16 @@ export default function Settings() {
             </div>
             <div className="row row--between" style={{ padding: 'var(--space-3) 0', borderTop: '1px solid var(--color-border)' }}>
               <div className="row" style={{ gap: 12 }}>
+                <span className="stat-card__icon stat-card__icon--warning"><Icon name="lock" size={17} /></span>
+                <div>
+                  <div className="font-semibold" style={{ fontSize: 14 }}>Security PIN</div>
+                  <div className="muted text-xs">4-digit PIN required for transfers and bill payments</div>
+                </div>
+              </div>
+              <a href="/pin" className="btn btn--secondary btn--sm">Manage PIN</a>
+            </div>
+            <div className="row row--between" style={{ padding: 'var(--space-3) 0', borderTop: '1px solid var(--color-border)' }}>
+              <div className="row" style={{ gap: 12 }}>
                 <span className="stat-card__icon stat-card__icon--danger"><Icon name="logout" size={17} /></span>
                 <div>
                   <div className="font-semibold" style={{ fontSize: 14 }}>Sign out</div>

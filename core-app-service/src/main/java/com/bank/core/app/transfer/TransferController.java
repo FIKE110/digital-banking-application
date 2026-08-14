@@ -2,6 +2,7 @@ package com.bank.core.app.transfer;
 
 import com.bank.common.dto.transfer.TransferRequest;
 import com.bank.common.dto.transfer.TransferResponse;
+import com.bank.common.dto.transfer.ResolvedAccountResponse;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
 import jakarta.validation.Valid;
@@ -33,6 +34,13 @@ public class TransferController {
     public ResponseEntity<ApiResponse<List<TransferResponse>>> list() {
         List<TransferResponse> transfers = transferService.findAll();
         return ApiResponseUtil.buildSuccess("Transfers fetched successfully", transfers);
+    }
+
+    @GetMapping("/resolve")
+    public ResponseEntity<ApiResponse<ResolvedAccountResponse>> resolve(
+            @RequestParam String accountNumber) {
+        return ApiResponseUtil.buildSuccess("Account resolved successfully",
+                transferService.resolveAccount(accountNumber));
     }
 
     @GetMapping("/{id}")

@@ -107,6 +107,7 @@ export default function AdminKyc() {
                 <th>Email</th>
                 <th>BVN</th>
                 <th>NIN</th>
+                <th>Tier</th>
                 <th>Status</th>
                 <th>Submitted</th>
                 <th>Action</th>
@@ -119,6 +120,7 @@ export default function AdminKyc() {
                   <td className="text-sm">{r.email}</td>
                   <td className="mono text-sm">{r.bvn || '—'}</td>
                   <td className="mono text-sm">{r.nin || '—'}</td>
+                  <td><span className="badge badge--success">{r.tier || 'TIER_1'}</span></td>
                   <td><StatusBadge status={r.bvnStatus || 'PENDING'} /></td>
                   <td className="text-sm">{formatDate(r.createdAt)}</td>
                   <td>

@@ -34,7 +34,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div style={{ position: 'absolute', width: 220, height: 220, borderRadius: '50%', border: '1px solid var(--color-nav-3)', bottom: -100, left: -60 }} />
 
         <div className="row" style={{ gap: 12, position: 'relative', zIndex: 1 }}>
-          <div className="brand__logo" style={{ width: 42, height: 42, fontSize: 18 }}>A</div>
+          <div className="brand__logo" style={{ width: 42, height: 42, fontSize: 18 }}>5</div>
           <div>
             <div className="brand__name" style={{ color: 'var(--hero-text)' }}>{BANK_NAME}</div>
             <div style={{ fontSize: 12, color: 'var(--hero-text-2)' }}>{BANK_TAG}</div>

@@ -107,6 +107,7 @@ export default function Dashboard() {
     { label: 'Pay bills', icon: 'zap', to: '/payments' },
     { label: 'Top up', icon: 'phone', to: '/payments' },
     { label: 'Cards', icon: 'card', to: '/cards' },
+    { label: 'Verify ID', icon: 'fingerprint', to: '/kyc' },
     { label: 'Statements', icon: 'receipt', to: '/transactions' },
   ];
 

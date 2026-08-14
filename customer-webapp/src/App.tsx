@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute, { AdminRoute } from './components/ProtectedRoute';
+import SecurityPin from './pages/SecurityPin';
+import Kyc from './pages/Kyc';
 import Layout from './components/Layout';
 import { ThemeProvider } from './ui/Theme';
 import { ToastProvider } from './ui/Toast';
@@ -57,9 +59,11 @@ function App() {
                 <Route path="/bills" element={<Navigate to="/payments" replace />} />
                 <Route path="/cards" element={<Cards />} />
                 <Route path="/beneficiaries" element={<Beneficiaries />} />
+                <Route path="/kyc" element={<Kyc />} />
                 <Route path="/transactions" element={<TransactionHistory />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/pin" element={<SecurityPin />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/admin/accounts" element={<AdminRoute><AdminAccounts /></AdminRoute>} />

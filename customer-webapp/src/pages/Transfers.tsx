@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAccounts } from '../api/accounts';
-import { initiateTransfer, getTransfers, reverseTransfer } from '../api/transfers';
+import { initiateTransfer, getTransfers, reverseTransfer, resolveAccount } from '../api/transfers';
 import { auditList, type AuditEvent } from '../api/audit';
+import { downloadTransferReceipt } from '../api/receipts';
 import { getBeneficiaries } from '../api/beneficiaries';
 import { formatMoney, formatDateTime } from '../utils/format';
 import { PageHeader } from '../ui/Card';
@@ -32,9 +33,15 @@ export default function Transfers() {
   const [dest, setDest] = useState('');
   const [amount, setAmount] = useState('');
   const [desc, setDesc] = useState('');
+  const [pin, setPin] = useState('');
   const [busy, setBusy] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState('');
   const [completed, setCompleted] = useState<Transfer | null>(null);
+  const [resolving, setResolving] = useState(false);
+  const [resolvedName, setResolvedName] = useState<string | null>(null);
+  const [resolveError, setResolveError] = useState('');
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
+  const [receiptBusy, setReceiptBusy] = useState(false);
   const [reverseBusy, setReverseBusy] = useState(false);
   const [showAuditTrail, setShowAuditTrail] = useState(false);
   const [auditTrail, setAuditTrail] = useState<AuditEvent[]>([]);
@@ -67,6 +74,8 @@ export default function Transfers() {
     }
   }, []);
 
+  useEffect(() => { setIdempotencyKey(crypto.randomUUID()); }, []);
+
   useEffect(() => { load(); }, [load]);
 
   const sourceAccount = accounts.find(a => a.accountNumber === source);
@@ -79,6 +88,21 @@ export default function Transfers() {
   const next = () => setStep(2);
   const back = () => setStep(1);
 
+  const doResolve = async () => {
+    if (!dest || dest === source) return;
+    setResolving(true);
+    setResolveError('');
+    setResolvedName(null);
+    try {
+      const r = await resolveAccount(dest);
+      setResolvedName(r.data?.accountName ?? null);
+    } catch (err: any) {
+      setResolveError(err.response?.data?.message || 'Account not found');
+    } finally {
+      setResolving(false);
+    }
+  };
+
   const submit = async () => {
     setBusy(true);
     try {
@@ -87,6 +111,8 @@ export default function Transfers() {
         destinationAccountNumber: dest,
         amount: Number(amount),
         description: desc || undefined,
+        pin,
+        idempotencyKey,
       });
       setCompleted(res.data ?? (res as any).data ?? null);
       setStep(3);
@@ -94,11 +120,13 @@ export default function Transfers() {
       setDest('');
       setAmount('');
       setDesc('');
+      setPin('');
       success('Transfer sent');
       const tr = await getTransfers();
       setTransfers(tr.data ?? []);
     } catch (err: any) {
       toastError(err.response?.data?.message || err.message || 'Transfer failed');
+      // Keep the same idempotency key on retry so a partially-applied transfer isn't double-charged
     } finally {
       setBusy(false);
     }
@@ -110,6 +138,9 @@ export default function Transfers() {
   const startNew = () => {
     setStep(1);
     setCompleted(null);
+    setIdempotencyKey(crypto.randomUUID());
+    setResolvedName(null);
+    setResolveError('');
   };
 
   const totalSent = transfers
@@ -208,15 +239,32 @@ export default function Transfers() {
                     )}
                   </div>
 
-                  <Field label="Destination account number">
-                    <Input
-                      icon="send"
-                      className="input--mono"
-                      placeholder="Enter account number"
-                      value={dest}
-                      onChange={e => setDest(e.target.value)}
-                      required
-                    />
+                  <Field label="Destination account number" hint={
+                    resolvedName ? `Account name: ${resolvedName}`
+                      : resolveError || undefined
+                  }>
+                    <div className="row" style={{ gap: 8 }}>
+                      <Input
+                        icon="send"
+                        className="input--mono"
+                        placeholder="Enter account number"
+                        value={dest}
+                        onChange={e => { setDest(e.target.value); setResolvedName(null); setResolveError(''); }}
+                        required
+                        style={{ flex: 1 }}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        loading={resolving}
+                        disabled={!dest || dest === source}
+                        onClick={doResolve}
+                        style={{ alignSelf: 'flex-start' }}
+                      >
+                        Verify
+                      </Button>
+                    </div>
                   </Field>
 
                   <div className="grid-2" style={{ gap: 'var(--space-4)' }}>
@@ -277,6 +325,19 @@ export default function Transfers() {
                       <span>{formatMoney(Number(amount), currency)}</span>
                     </div>
                   </div>
+                  <Field label="Transaction PIN">
+                    <Input
+                      type="password"
+                      inputMode="numeric"
+                      pattern="\d*"
+                      maxLength={4}
+                      value={pin}
+                      onChange={e => setPin(e.target.value)}
+                      placeholder="Enter your 4-digit PIN"
+                      autoComplete="off"
+                      required
+                    />
+                  </Field>
                   <div className="row" style={{ justifyContent: 'flex-end' }}>
                     <Button variant="secondary" onClick={back}>Back</Button>
                     <Button onClick={submit} loading={busy} icon="send">Confirm & send</Button>
@@ -432,27 +493,46 @@ export default function Transfers() {
               )}
             </div>
             {selectedTransfer.status === 'COMPLETED' && (
-              <Button
-                variant="danger"
-                icon="refresh"
-                loading={reverseBusy}
-                onClick={async () => {
-                  setReverseBusy(true);
-                  try {
-                    await reverseTransfer(selectedTransfer.id);
-                    success('Transfer reversed');
-                    setSelectedTransfer(null);
-                    const tr = await getTransfers();
-                    setTransfers(tr.data ?? []);
-                  } catch (err: any) {
-                    toastError(err.response?.data?.message || 'Reversal failed');
-                  } finally {
-                    setReverseBusy(false);
-                  }
-                }}
-              >
-                Reverse transfer
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  icon="download"
+                  loading={receiptBusy}
+                  onClick={async () => {
+                    setReceiptBusy(true);
+                    try {
+                      await downloadTransferReceipt(selectedTransfer.id);
+                    } catch (err: any) {
+                      toastError(err.response?.data?.message || 'Receipt download failed');
+                    } finally {
+                      setReceiptBusy(false);
+                    }
+                  }}
+                >
+                  Download receipt (PDF)
+                </Button>
+                <Button
+                  variant="danger"
+                  icon="refresh"
+                  loading={reverseBusy}
+                  onClick={async () => {
+                    setReverseBusy(true);
+                    try {
+                      await reverseTransfer(selectedTransfer.id);
+                      success('Transfer reversed');
+                      setSelectedTransfer(null);
+                      const tr = await getTransfers();
+                      setTransfers(tr.data ?? []);
+                    } catch (err: any) {
+                      toastError(err.response?.data?.message || 'Reversal failed');
+                    } finally {
+                      setReverseBusy(false);
+                    }
+                  }}
+                >
+                  Reverse transfer
+                </Button>
+              </>
             )}
           </div>
         )}

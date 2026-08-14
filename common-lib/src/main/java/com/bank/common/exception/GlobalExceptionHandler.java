@@ -68,6 +68,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseUtil.buildError("BAD_REQUEST", ex.getMessage(), request.getRequestURI()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        log.warn("Invalid state: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponseUtil.buildError("BAD_REQUEST", ex.getMessage(), request.getRequestURI()));
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ErrorResponse> handleSecurity(SecurityException ex, HttpServletRequest request) {
         log.warn("Access denied: {}", ex.getMessage());

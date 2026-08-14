@@ -216,6 +216,7 @@ export interface AdminKyc {
   bvnStatus: string;
   nin: string;
   ninStatus: string;
+  tier?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -7,6 +7,7 @@ export const payBill = (data: {
   customerReference: string;
   amount: number;
   description?: string;
+  pin?: string;
 }) => client.post<ApiResponse<BillPayment>>('/bills/pay', data).then(r => r.data);
 
 export const getBillPayments = () =>

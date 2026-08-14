@@ -21,6 +21,7 @@ public class KycResponse {
     private String bvnStatus;
     private String nin;
     private String ninStatus;
+    private String tier;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

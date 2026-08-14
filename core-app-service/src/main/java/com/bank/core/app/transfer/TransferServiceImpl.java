@@ -1,5 +1,6 @@
 package com.bank.core.app.transfer;
 
+import com.bank.common.dto.transfer.ResolvedAccountResponse;
 import com.bank.common.dto.transfer.TransferRequest;
 import com.bank.common.dto.transfer.TransferResponse;
 import com.bank.common.util.IdGenerator;
@@ -13,6 +14,7 @@ import com.bank.core.data.user.User;
 import com.bank.core.data.user.UserRepository;
 import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
+import com.bank.core.app.pin.PinService;
 import tools.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +43,31 @@ public class TransferServiceImpl implements TransferService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final PinService pinService;
 
     @Override
     @Transactional
     public TransferResponse initiate(TransferRequest request) {
         User currentUser = getCurrentUser();
+
+        // Idempotency: replay the same request returns the original transfer
+        if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
+            Transfer existing = transferRepository
+                    .findBySourceAccountNumberAndIdempotencyKey(
+                            request.getSourceAccountNumber(), request.getIdempotencyKey())
+                    .orElse(null);
+            if (existing != null) {
+                log.info("Replayed transfer request with idempotency key {} — returning existing transfer {}",
+                        request.getIdempotencyKey(), existing.getReference());
+                return mapToResponse(existing);
+            }
+        }
+
+        // Verify transaction PIN
+        if (request.getPin() == null || request.getPin().isBlank()) {
+            throw new IllegalArgumentException("Transaction PIN is required to send money");
+        }
+        pinService.verifyPin(new com.bank.common.dto.pin.VerifyPinRequest(request.getPin()));
 
         // Validate accounts are different
         if (request.getSourceAccountNumber().equals(request.getDestinationAccountNumber())) {
@@ -99,6 +121,7 @@ public class TransferServiceImpl implements TransferService {
                 .destinationAccountNumber(request.getDestinationAccountNumber())
                 .amount(amount)
                 .description(request.getDescription())
+                .idempotencyKey(request.getIdempotencyKey())
                 .status("COMPLETED")
                 .build();
 
@@ -165,6 +188,25 @@ public class TransferServiceImpl implements TransferService {
         }
 
         return mapToResponse(transfer);
+    }
+
+    @Override
+    public ResolvedAccountResponse resolveAccount(String accountNumber) {
+        if (accountNumber == null || accountNumber.isBlank()) {
+            throw new IllegalArgumentException("Account number is required");
+        }
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + accountNumber));
+        if (!"ACTIVE".equals(account.getStatus())) {
+            throw new IllegalArgumentException("Account is not active");
+        }
+        return ResolvedAccountResponse.builder()
+                .accountNumber(account.getAccountNumber())
+                .accountName(account.getAccountName())
+                .currency(account.getCurrency())
+                .status(account.getStatus())
+                .transferable(true)
+                .build();
     }
 
     @Override

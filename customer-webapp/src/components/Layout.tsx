@@ -4,6 +4,7 @@ import { useTheme } from '../ui/Theme';
 import Icon from '../ui/Icon';
 import { BANK_NAME, BANK_TAG } from '../config';
 import { useEffect, useState } from 'react';
+import { getUnreadCount } from '../api/notifications';
 
 interface NavItem {
   to: string;
@@ -30,6 +31,7 @@ const customerGroups: Array<{ label: string; items: NavItem[] }> = [
     label: 'Manage',
     items: [
       { to: '/beneficiaries', label: 'Beneficiaries', icon: 'users' },
+      { to: '/kyc', label: 'KYC Verification', icon: 'fingerprint' },
       { to: '/notifications', label: 'Notifications', icon: 'bell' },
       { to: '/settings', label: 'Settings', icon: 'settings' },
     ],
@@ -94,8 +96,10 @@ const TITLES: Record<string, string> = {
   '/cards': 'Cards',
   '/transactions': 'Transactions',
   '/beneficiaries': 'Beneficiaries',
+  '/kyc': 'KYC Verification',
   '/notifications': 'Notifications',
   '/settings': 'Settings',
+  '/pin': 'Security PIN',
   '/profile': 'Profile',
   '/admin': 'Dashboard',
   '/admin/login': 'Admin Login',
@@ -124,6 +128,15 @@ export default function Layout() {
   const { theme, toggle } = useTheme();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    getUnreadCount()
+      .then(r => { if (active) setUnread(r.data ?? 0); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [location.pathname]);
 
   useEffect(() => {
     setDrawerOpen(false);
@@ -141,7 +154,7 @@ export default function Layout() {
     <>
       {includeBrand && (
         <div className="brand">
-          <div className="brand__logo">A</div>
+          <div className="brand__logo">5</div>
           <div>
             <div className="brand__name">{BANK_NAME}</div>
             <div className="brand__tag">{isAdmin ? 'Admin Portal' : BANK_TAG}</div>
@@ -217,7 +230,9 @@ export default function Layout() {
             {!isAdmin && (
               <NavLink to="/notifications" className="icon-btn" aria-label="Notifications">
                 <Icon name="bell" size={17} />
-                <span className="icon-btn__dot" />
+                {unread > 0 && (
+                  <span className="icon-btn__dot" style={{ background: 'var(--color-danger)' }} />
+                )}
               </NavLink>
             )}
             <button className="icon-btn hidden-mobile" onClick={toggle} aria-label="Toggle theme">
@@ -242,7 +257,7 @@ export default function Layout() {
           <div className="drawer">
             <div className="drawer__header">
               <div className="row" style={{ gap: 10 }}>
-                <div className="brand__logo">A</div>
+                <div className="brand__logo">5</div>
                 <div>
                   <div className="brand__name">{BANK_NAME}</div>
                   <div className="brand__tag">{isAdmin ? 'Admin Portal' : BANK_TAG}</div>

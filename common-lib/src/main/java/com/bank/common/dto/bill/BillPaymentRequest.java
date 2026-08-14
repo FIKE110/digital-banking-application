@@ -2,6 +2,7 @@ package com.bank.common.dto.bill;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,4 +31,7 @@ public class BillPaymentRequest {
     private BigDecimal amount;
 
     private String description;
+
+    @Pattern(regexp = "^\\d{4}$", message = "PIN must be exactly 4 digits")
+    private String pin;
 }

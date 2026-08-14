@@ -35,6 +35,9 @@ public class Transfer {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "idempotency_key", length = 64)
+    private String idempotencyKey;
+
     @Column(nullable = false)
     @Builder.Default
     private String status = "COMPLETED";

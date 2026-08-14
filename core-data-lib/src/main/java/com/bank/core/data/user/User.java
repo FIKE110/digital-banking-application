@@ -29,6 +29,12 @@ public class User extends AuditModel implements UserDetails {
     private String email;
     @Column(name = "password")
     private String password;
+    @Column(name = "transaction_pin")
+    private String transactionPin;
+    @Column(name = "pin_set_at")
+    private LocalDateTime pinSetAt;
+    @Column(name = "pin_attempts")
+    private int pinAttempts;
     @Column(name = "last_logout_date")
     private LocalDateTime lastLogoutDate;
 

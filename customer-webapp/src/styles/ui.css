@@ -601,7 +601,7 @@
 }
 .bank-card--frozen { filter: grayscale(1); }
 .bank-card::before {
-  content: var(--bank-brand, 'AURUM');
+  content: var(--bank-brand, '5IVE');
   position: absolute;
   right: 14px;
   bottom: -18px;

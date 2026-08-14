@@ -32,3 +32,8 @@ scalar:
 app:
   jwt:
     key: hW55LPxahNOumpcWUiWGmTqf/GTQHN8xNRFcNIv3P/U=
+  bank:
+    name: 5ive
+    tagline: Secure Digital Banking
+    support-email: support@5ive.bank
+    website: 5ive.bank

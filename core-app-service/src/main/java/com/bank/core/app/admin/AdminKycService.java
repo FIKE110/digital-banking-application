@@ -2,7 +2,9 @@ package com.bank.core.app.admin;
 
 import com.bank.common.dto.admin.KycResponse;
 import com.bank.common.enums.AdminAuditEventType;
+import com.bank.common.enums.KycTier;
 import com.bank.common.enums.VerificationStatus;
+import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.util.SecurityUtil;
 import com.bank.core.data.user.User;
 import com.bank.core.data.user.UserRepository;
@@ -29,6 +31,7 @@ public class AdminKycService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final AdminAuditService adminAuditService;
+    private final NotificationService notificationService;
     private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
@@ -60,11 +63,17 @@ public class AdminKycService {
         String previous = kyc.getBvnVerificationStatus() != null ? kyc.getBvnVerificationStatus().name() : "UNVERIFIED";
         kyc.setBvnVerificationStatus(VerificationStatus.VERIFIED);
         kyc.setNinVerificationStatus(VerificationStatus.VERIFIED);
+        KycTier previousTier = kyc.getTier() != null ? kyc.getTier() : KycTier.TIER_1;
+        kyc.setTier(nextTier(previousTier));
         UserKyc saved = kycRepository.save(kyc);
 
         adminAuditService.audit(AdminAuditEventType.CUSTOMER_PROFILE_MODIFIED, "KYC", String.valueOf(id),
                 usernameOf(saved), "KYC approved (was " + previous + ")",
                 previous, "VERIFIED", request);
+
+        notifyCustomer(saved, "KYC approved",
+                "Your identity was verified and your account tier is now " + saved.getTier().name()
+                        + ". Enjoy higher limits.");
         return mapToResponse(saved);
     }
 
@@ -80,7 +89,25 @@ public class AdminKycService {
         adminAuditService.audit(AdminAuditEventType.CUSTOMER_PROFILE_MODIFIED, "KYC", String.valueOf(id),
                 usernameOf(saved), "KYC rejected" + (reason != null ? ": " + reason : ""),
                 previous, "UNVERIFIED", request);
+
+        notifyCustomer(saved, "KYC rejected",
+                "Your identity verification was rejected" + (reason != null ? ": " + reason : "")
+                        + ". Please resubmit your details.");
         return mapToResponse(saved);
+    }
+
+    private KycTier nextTier(KycTier current) {
+        return switch (current) {
+            case TIER_1 -> KycTier.TIER_2;
+            case TIER_2 -> KycTier.TIER_3;
+            case TIER_3 -> KycTier.TIER_3;
+        };
+    }
+
+    private void notifyCustomer(UserKyc kyc, String title, String body) {
+        if (kyc.getUser() != null && kyc.getUser().getUserId() != null) {
+            notificationService.notify(kyc.getUser().getUserId(), "SECURITY", title, body);
+        }
     }
 
     private String usernameOf(UserKyc kyc) {
@@ -103,6 +130,7 @@ public class AdminKycService {
                 .bvnStatus(kyc.getBvnVerificationStatus() != null ? kyc.getBvnVerificationStatus().name() : "UNVERIFIED")
                 .nin(maskNumber(kyc.getNin()))
                 .ninStatus(kyc.getNinVerificationStatus() != null ? kyc.getNinVerificationStatus().name() : "UNVERIFIED")
+                .tier(kyc.getTier() != null ? kyc.getTier().name() : "TIER_1")
                 .createdAt(kyc.getCreatedAt())
                 .updatedAt(kyc.getUpdatedAt())
                 .build();

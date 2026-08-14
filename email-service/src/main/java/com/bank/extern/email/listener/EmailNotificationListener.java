@@ -23,13 +23,13 @@ public class EmailNotificationListener {
     private final TemplateService templateService;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.bank.name:Aurum Bank}")
+    @Value("${app.bank.name:5ive}")
     private String bankName;
 
-    @Value("${app.bank.support-email:support@aurum.bank}")
+    @Value("${app.bank.support-email:support@5ive.bank}")
     private String supportEmail;
 
-    @Value("${app.bank.website:aurum.bank}")
+    @Value("${app.bank.website:5ive.bank}")
     private String website;
 
     @RabbitListener(queues = "${app.rabbitmq.queue.notification:email.notification.queue}")

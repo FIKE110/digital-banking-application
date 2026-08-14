@@ -6,6 +6,7 @@ import com.bank.common.dto.bill.BillPaymentResponse;
 import com.bank.common.util.IdGenerator;
 import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
+import com.bank.core.app.pin.PinService;
 import com.bank.core.data.account.Account;
 import com.bank.core.data.account.AccountRepository;
 import com.bank.core.data.bill.BillPayment;
@@ -41,11 +42,18 @@ public class BillServiceImpl implements BillService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final PinService pinService;
 
     @Override
     @Transactional
     public BillPaymentResponse pay(BillPaymentRequest request) {
         User currentUser = getCurrentUser();
+
+        // Verify transaction PIN
+        if (request.getPin() == null || request.getPin().isBlank()) {
+            throw new IllegalArgumentException("Transaction PIN is required for bill payments");
+        }
+        pinService.verifyPin(new com.bank.common.dto.pin.VerifyPinRequest(request.getPin()));
 
         Account account = accountRepository.findByAccountNumber(request.getSourceAccountNumber())
                 .orElseThrow(() -> new IllegalArgumentException(

@@ -1,5 +1,6 @@
 package com.bank.core.data.user.kyc;
 
+import com.bank.common.enums.KycTier;
 import com.bank.common.enums.VerificationStatus;
 import com.bank.core.data.model.AuditModel;
 import com.bank.core.data.user.profile.UserProfile;
@@ -23,4 +24,7 @@ public class UserKyc extends AuditModel {
     private String nin;
     @Enumerated(EnumType.STRING)
     private VerificationStatus ninVerificationStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tier")
+    private KycTier tier = KycTier.TIER_1;
 }
