@@ -15,7 +15,7 @@ import { downloadTransferReceiptByReference, downloadBillReceiptByReference, dow
 import type { Account, Paginated, Transaction } from '../types';
 
 export default function TransactionHistory() {
-  const { error: toastError } = useToast();
+  const { success, error: toastError } = useToast();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [page, setPage] = useState<Paginated<Transaction> | null>(null);
   const [typeFilter, setTypeFilter] = useState('');
@@ -47,6 +47,44 @@ export default function TransactionHistory() {
     } finally {
       setReceiptBusyId(null);
     }
+  };
+
+  const exportToCsv = () => {
+    if (!transactions || transactions.length === 0) return;
+    const headers = [
+      'Reference',
+      'Account Number',
+      'Counterparty Account',
+      'Type',
+      'Amount',
+      'Currency',
+      'Status',
+      'Date',
+      'Description',
+    ];
+    const rows = transactions.map(t => [
+      `"${(t.reference || '').replace(/"/g, '""')}"`,
+      `"${(t.accountNumber || '').replace(/"/g, '""')}"`,
+      `"${(t.counterpartyAccountNumber || '').replace(/"/g, '""')}"`,
+      `"${(t.type || '').replace(/"/g, '""')}"`,
+      t.amount != null ? t.amount : 0,
+      `"${(currencyFor(t) || 'NGN').replace(/"/g, '""')}"`,
+      `"${(t.status || '').replace(/"/g, '""')}"`,
+      `"${(t.createdAt || '').replace(/"/g, '""')}"`,
+      `"${(t.description || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `transactions_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    success('Transaction history exported to CSV');
   };
 
   useEffect(() => {
@@ -102,7 +140,20 @@ export default function TransactionHistory() {
       <PageHeader
         title="Transactions"
         subtitle="Search and filter all account activity"
-        actions={hasFilters ? <Button variant="ghost" size="sm" onClick={clearFilters} icon="x">Clear filters</Button> : undefined}
+        actions={
+          <div className="row" style={{ gap: 8 }}>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} icon="x">
+                Clear filters
+              </Button>
+            )}
+            {transactions.length > 0 && (
+              <Button variant="secondary" size="sm" onClick={exportToCsv} icon="download">
+                Export CSV
+              </Button>
+            )}
+          </div>
+        }
       />
 
       <div className="surface filter-bar">

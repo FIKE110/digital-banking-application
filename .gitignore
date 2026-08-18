@@ -31,6 +31,16 @@ Thumbs.db
 *.env.local
 *.env.*.local
 
+### Node & Frontend ###
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.dist/
+**/.dist/
+dist-ssr/
+
 ### Logs ###
 *.log
 node_modules/
+
