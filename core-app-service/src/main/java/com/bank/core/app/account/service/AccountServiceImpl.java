@@ -343,7 +343,7 @@ public class AccountServiceImpl implements AccountService {
         String accountNumber;
         do {
             // Generate 10-digit random number (ensuring it doesn't start with 0)
-            int randomNum = 100000000 + random.nextInt(900000000); // 100,000,000 to 999,999,999
+            long randomNum = 1_000_000_000L + (long) (random.nextDouble() * 9_000_000_000L);
             accountNumber = String.valueOf(randomNum);
         } while (accountRepository.existsByAccountNumber(accountNumber));
 
