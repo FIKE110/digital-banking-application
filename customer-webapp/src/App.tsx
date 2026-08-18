@@ -37,6 +37,7 @@ import Cards from './pages/Cards';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
+import Landing from './pages/Landing';
 
 function App() {
   return (
@@ -45,11 +46,13 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <Routes>
+              <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+
               <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/accounts" element={<Accounts />} />
@@ -79,7 +82,6 @@ function App() {
                 <Route path="/admin/admins" element={<AdminRoute><AdminAdmins /></AdminRoute>} />
                 <Route path="/admin/approvals" element={<AdminRoute><AdminApprovals /></AdminRoute>} />
                 <Route path="/admin/adjustments" element={<AdminRoute><AdminAdjustments /></AdminRoute>} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
