@@ -12,6 +12,7 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -72,17 +73,36 @@ export default function Register() {
             autoComplete="email"
           />
         </Field>
-        <Field label="Password" hint="At least 6 characters">
-          <Input
-            type="password"
-            icon="lock"
-            placeholder="Create a strong password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            minLength={6}
-            autoComplete="new-password"
-          />
+        <Field label="Password">
+          <div style={{ position: "relative" }}>
+            <Input
+                type={showPassword ? "text" : "password"}
+                icon="lock"
+                placeholder="Enter your password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+            />
+            <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
         </Field>
         <Button type="submit" block size="lg" loading={loading}>
           Create account

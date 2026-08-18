@@ -11,6 +11,8 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -74,15 +76,35 @@ export default function AdminLogin() {
           />
         </Field>
         <Field label="Password">
-          <Input
-            type="password"
-            icon="lock"
-            placeholder="Enter admin password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+          <div style={{ position: "relative" }}>
+            <Input
+                type={showPassword ? "text" : "password"}
+                icon="lock"
+                placeholder="Enter your password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+            />
+            <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
         </Field>
         <Button type="submit" block size="lg" loading={loading} icon="lock">
           Sign in as Admin
