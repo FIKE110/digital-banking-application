@@ -84,7 +84,7 @@ export default function AdminPayments() {
                   <td className="mono text-sm">{p.reference}</td>
                   <td className="mono text-sm">{p.sourceAccountNumber}</td>
                   <td className="font-semibold text-sm">{p.provider}</td>
-                  <td className="text-sm">{p.customerReference || '—'}</td>
+                  <td className="text-sm">{p.customerReference || '-'}</td>
                   <td className="font-semibold tabular">{formatMoney(p.amount, 'NGN')}</td>
                   <td><StatusBadge status={p.status} /></td>
                   <td className="text-sm">{formatDateTime(p.createdAt)}</td>

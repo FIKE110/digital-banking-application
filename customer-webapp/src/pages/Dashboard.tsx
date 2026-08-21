@@ -146,11 +146,11 @@ export default function Dashboard() {
         <div className="hero__details">
           <div>
             <div className="hero__stat-label">Primary account</div>
-            <div className="hero__stat-value mono">{primary?.accountNumber ?? '—'}</div>
+            <div className="hero__stat-value mono">{primary?.accountNumber ?? '-'}</div>
           </div>
           <div>
             <div className="hero__stat-label">Account type</div>
-            <div className="hero__stat-value">{primary?.accountType ?? '—'}</div>
+            <div className="hero__stat-value">{primary?.accountType ?? '-'}</div>
           </div>
           <div>
             <div className="hero__stat-label">This month</div>

@@ -1,8 +1,8 @@
 :root {
-  /* ============ Palette — black · white · green · red · yellow ============ */
+  /* ============ Palette: black, white, green, red, yellow ============ */
 
   /* Surfaces */
-  --color-bg: #ffffff;             /* white — main page background */
+  --color-bg: #ffffff;             /* white, main page background */
   --color-surface: #ffffff;        /* primary content surfaces */
   --color-surface-2: #f5f5f5;      /* light gray supporting surface */
   --color-surface-3: #e8e8e8;      /* gray for neutral fills */
@@ -22,7 +22,7 @@
   --color-text-2: #171717;
   --color-text-3: #6b6b6b;
 
-  /* Action (bright green) — primary actions, incoming money, positive */
+  /* Action (bright green): primary actions, incoming money, positive */
   --color-brand: #00c853;
   --color-brand-hover: #00b34a;
   --color-brand-soft: #e6f9ef;
@@ -64,20 +64,20 @@
   --space-8: 40px;
   --space-9: 48px;
 
-  /* Radius — moderate, sharp */
+  /* Radius: moderate, sharp */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 12px;
   --radius-full: 999px;
 
-  /* Shadows — flat, no elevation */
+  /* Shadows: flat, no elevation */
   --shadow-xs: none;
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
 
-  /* Typography — bold, direct */
+  /* Typography: bold, direct */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto,

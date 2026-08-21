@@ -18,6 +18,8 @@ public class UserResponseDto {
     private String uid;
     private Set<String> roleNames;
     private Set<String> permissions;
+    private String kycStatus;
+    private boolean kycVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

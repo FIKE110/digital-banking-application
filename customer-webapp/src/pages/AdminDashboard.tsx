@@ -215,7 +215,7 @@ export default function AdminDashboard() {
                     <div style={{ fontSize: 11, color: '#6b6b6b' }}>{event.targetType}</div>
                   </td>
                   <td className="text-sm" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {event.reason || '—'}
+                    {event.reason || '-'}
                   </td>
                   <td className="text-sm mono">{formatDate(event.occurredAt)}</td>
                 </tr>

@@ -1,76 +1,47 @@
 package com.bank.core.app.admin;
 
 import com.bank.common.dto.admin.AdjustmentRequest;
-import com.bank.common.dto.admin.AdminApprovalResponse;
-import com.bank.common.dto.admin.SubmitApprovalRequest;
 import com.bank.common.enums.AdminAuditEventType;
-import com.bank.core.app.admin.approval.AdminApprovalService;
+import com.bank.core.app.ledger.GlAccount;
+import com.bank.core.app.ledger.JournalPosting;
+import com.bank.core.app.ledger.LedgerLeg;
+import com.bank.core.app.ledger.LedgerPostingService;
 import com.bank.core.data.account.Account;
 import com.bank.core.data.account.AccountRepository;
-import jakarta.servlet.http.HttpServletRequest;
+import com.bank.core.data.ledger.LedgerSide;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminAdjustmentService {
 
-    private static final BigDecimal APPROVAL_THRESHOLD = new BigDecimal("1000000.00");
+    private static boolean isInterest(String reason) {
+        return reason != null && reason.toLowerCase().contains("interest");
+    }
 
     private final AccountRepository accountRepository;
-    private final AdminApprovalService approvalService;
     private final AdminAuditService adminAuditService;
+    private final LedgerPostingService ledgerPostingService;
 
-    public AdminApprovalResponse manualCredit(AdjustmentRequest request, HttpServletRequest httpRequest) {
-        accountRepository.findByAccountNumber(request.getAccountNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + request.getAccountNumber()));
-        return submitOrExecute("MANUAL_CREDIT", request,
-                request.getAmount().compareTo(APPROVAL_THRESHOLD) >= 0, httpRequest);
+    @Transactional
+    public void manualCredit(AdjustmentRequest request) {
+        executeAdjustment("MANUAL_CREDIT", request);
     }
 
-    public AdminApprovalResponse manualDebit(AdjustmentRequest request, HttpServletRequest httpRequest) {
-        accountRepository.findByAccountNumber(request.getAccountNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + request.getAccountNumber()));
-        return submitOrExecute("MANUAL_DEBIT", request,
-                request.getAmount().compareTo(APPROVAL_THRESHOLD) >= 0, httpRequest);
+    @Transactional
+    public void manualDebit(AdjustmentRequest request) {
+        executeAdjustment("MANUAL_DEBIT", request);
     }
 
-    public AdminApprovalResponse balanceAdjustment(AdjustmentRequest request, HttpServletRequest httpRequest) {
-        accountRepository.findByAccountNumber(request.getAccountNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Account not found: " + request.getAccountNumber()));
-        return submitOrExecute("BALANCE_ADJUSTMENT", request, true, httpRequest);
-    }
-
-    private AdminApprovalResponse submitOrExecute(String actionType, AdjustmentRequest request,
-                                                  boolean needsApproval, HttpServletRequest httpRequest) {
-        if (needsApproval) {
-            SubmitApprovalRequest approvalRequest = SubmitApprovalRequest.builder()
-                    .actionType(actionType)
-                    .actionDetails(buildActionDetails(actionType, request))
-                    .riskLevel("CRITICAL")
-                    .reason(request.getReason())
-                    .build();
-            return approvalService.submitApproval(approvalRequest, httpRequest);
-        }
-        executeAdjustment(actionType, request);
-        return null;
-    }
-
-    private Map<String, Object> buildActionDetails(String actionType, AdjustmentRequest request) {
-        Map<String, Object> details = new HashMap<>();
-        details.put("actionType", actionType);
-        details.put("accountNumber", request.getAccountNumber());
-        details.put("amount", request.getAmount().toPlainString());
-        details.put("reason", request.getReason());
-        details.put("reference", request.getReference());
-        return details;
+    @Transactional
+    public void balanceAdjustment(AdjustmentRequest request) {
+        executeAdjustment("BALANCE_ADJUSTMENT", request);
     }
 
     @Transactional
@@ -86,12 +57,16 @@ public class AdminAdjustmentService {
         };
 
         switch (actionType) {
-            case "MANUAL_CREDIT" -> account.setBalance(account.getBalance().add(request.getAmount()));
+            case "MANUAL_CREDIT" -> {
+                account.setBalance(account.getBalance().add(request.getAmount()));
+                postAdjustmentLedger("MANUAL_CREDIT", account, request);
+            }
             case "MANUAL_DEBIT" -> {
                 if (account.getBalance().compareTo(request.getAmount()) < 0) {
                     throw new IllegalStateException("Insufficient balance for debit adjustment");
                 }
                 account.setBalance(account.getBalance().subtract(request.getAmount()));
+                postAdjustmentLedger("MANUAL_DEBIT", account, request);
             }
             case "BALANCE_ADJUSTMENT" -> account.setBalance(request.getAmount());
             default -> throw new IllegalArgumentException("Unknown adjustment type: " + actionType);
@@ -107,5 +82,31 @@ public class AdminAdjustmentService {
         }
         log.info("Adjustment {} of {} on account {} executed",
                 actionType, request.getAmount(), request.getAccountNumber());
+    }
+
+    @Transactional
+    public void postAdjustmentLedger(String actionType, Account account, AdjustmentRequest request) {
+        String reference = request.getReference() != null && !request.getReference().isBlank()
+                ? request.getReference()
+                : java.util.UUID.randomUUID().toString();
+
+        if ("MANUAL_CREDIT".equals(actionType)) {
+            // Interest credited by an admin routes to the interest-expense GL;
+            // other manual credits offset the float/suspense account.
+            String gl = isInterest(request.getReason())
+                    ? GlAccount.INTEREST_EXPENSE
+                    : GlAccount.FLOAT;
+            ledgerPostingService.post(new JournalPosting(reference, "Manual credit",
+                    List.of(
+                            LedgerLeg.gl(gl, LedgerSide.DEBIT, request.getAmount()),
+                            LedgerLeg.customer(account.getAccountNumber(), LedgerSide.CREDIT, request.getAmount())
+                    )));
+        } else if ("MANUAL_DEBIT".equals(actionType)) {
+            ledgerPostingService.post(new JournalPosting(reference, "Manual debit",
+                    List.of(
+                            LedgerLeg.customer(account.getAccountNumber(), LedgerSide.DEBIT, request.getAmount()),
+                            LedgerLeg.gl(GlAccount.FLOAT, LedgerSide.CREDIT, request.getAmount())
+                    )));
+        }
     }
 }

@@ -14,4 +14,11 @@ public class CustomerName {
     private String lastName;
     private String otherNames;
     private String middleName;
+
+    public static CustomerName of(String firstName, String lastName) {
+        CustomerName name = new CustomerName();
+        name.setFirstName(firstName);
+        name.setLastName(lastName);
+        return name;
+    }
 }

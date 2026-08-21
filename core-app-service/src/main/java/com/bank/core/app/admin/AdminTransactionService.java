@@ -1,17 +1,12 @@
 package com.bank.core.app.admin;
 
-import com.bank.common.dto.admin.AdminApprovalResponse;
-import com.bank.common.dto.admin.ReviewApprovalRequest;
-import com.bank.common.dto.admin.SubmitApprovalRequest;
 import com.bank.common.dto.transaction.TransactionResponse;
 import com.bank.common.enums.AdminAuditEventType;
-import com.bank.core.app.admin.approval.AdminApprovalService;
 import com.bank.core.app.util.SecurityUtil;
 import com.bank.core.data.account.Account;
 import com.bank.core.data.account.AccountRepository;
 import com.bank.core.data.transaction.Transaction;
 import com.bank.core.data.transaction.TransactionRepository;
-import com.bank.core.data.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -35,7 +28,6 @@ public class AdminTransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final AdminAuditService adminAuditService;
-    private final AdminApprovalService approvalService;
     private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
@@ -87,47 +79,87 @@ public class AdminTransactionService {
         return mapToResponse(t);
     }
 
-    public AdminApprovalResponse reverseTransaction(UUID id, String reason,
-                                                    HttpServletRequest httpRequest) {
+    @Transactional
+    public TransactionResponse reverseTransaction(UUID id, String reason, HttpServletRequest httpRequest) {
         Transaction t = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + id));
 
-        Map<String, Object> details = new HashMap<>();
-        details.put("transactionId", id.toString());
-        details.put("reference", t.getReference());
-        details.put("accountNumber", t.getAccountNumber());
-        details.put("amount", t.getAmount().toPlainString());
-        details.put("type", t.getType());
-        details.put("reason", reason);
+        if (!"COMPLETED".equalsIgnoreCase(t.getStatus())) {
+            throw new IllegalStateException("Only completed transactions can be reversed");
+        }
 
-        SubmitApprovalRequest approvalRequest = SubmitApprovalRequest.builder()
-                .actionType("TRANSACTION_REVERSAL")
-                .actionDetails(details)
-                .riskLevel("HIGH")
-                .reason(reason)
+        Account account = accountRepository.findByAccountNumber(t.getAccountNumber())
+                .orElseThrow(() -> new IllegalStateException("Account not found: " + t.getAccountNumber()));
+
+        if ("DEBIT".equalsIgnoreCase(t.getType())) {
+            account.setBalance(account.getBalance().add(t.getAmount()));
+        } else if ("CREDIT".equalsIgnoreCase(t.getType())) {
+            account.setBalance(account.getBalance().subtract(t.getAmount()));
+        }
+        accountRepository.save(account);
+
+        String previousStatus = t.getStatus();
+        t.setStatus("REVERSED");
+        transactionRepository.save(t);
+
+        Transaction reversal = Transaction.builder()
+                .reference("REV-" + t.getReference())
+                .accountNumber(t.getAccountNumber())
+                .counterpartyAccountNumber(t.getCounterpartyAccountNumber())
+                .amount(t.getAmount())
+                .type(t.getType().equalsIgnoreCase("DEBIT") ? "CREDIT" : "DEBIT")
+                .description("Reversal of transaction: " + t.getReference()
+                        + (reason != null && !reason.isBlank() ? " (" + reason + ")" : ""))
+                .status("COMPLETED")
                 .build();
-        return approvalService.submitApproval(approvalRequest, httpRequest);
+        Transaction saved = transactionRepository.save(reversal);
+
+        adminAuditService.audit(AdminAuditEventType.TRANSACTION_REVERSED, "TRANSACTION",
+                id.toString(), t.getReference(),
+                "Transaction reversed" + (reason != null && !reason.isBlank() ? " - " + reason : ""),
+                previousStatus, "REVERSED", httpRequest);
+        log.info("Transaction {} reversed on account {} by {}",
+                t.getReference(), t.getAccountNumber(), getCurrentAdmin());
+
+        return mapToResponse(saved);
     }
 
-    public AdminApprovalResponse refundTransaction(UUID id, String reason,
-                                                   HttpServletRequest httpRequest) {
-        Transaction t = transactionRepository.findById(id)
+    @Transactional
+    public TransactionResponse refundTransaction(UUID id, String reason, HttpServletRequest httpRequest) {
+        Transaction original = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + id));
 
-        Map<String, Object> details = new HashMap<>();
-        details.put("transactionId", id.toString());
-        details.put("reference", t.getReference());
-        details.put("accountNumber", t.getAccountNumber());
-        details.put("amount", t.getAmount().toPlainString());
-        details.put("reason", reason);
+        Account account = accountRepository.findByAccountNumber(original.getAccountNumber())
+                .orElseThrow(() -> new IllegalStateException("Account not found: " + original.getAccountNumber()));
 
-        SubmitApprovalRequest approvalRequest = SubmitApprovalRequest.builder()
-                .actionType("TRANSACTION_REFUND")
-                .actionDetails(details)
-                .riskLevel("HIGH")
-                .reason(reason)
+        BigDecimal amount = original.getAmount();
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+
+        String previousStatus = original.getStatus();
+        original.setStatus("REFUNDED");
+        transactionRepository.save(original);
+
+        Transaction refund = Transaction.builder()
+                .reference("REF-" + original.getReference())
+                .accountNumber(original.getAccountNumber())
+                .counterpartyAccountNumber(original.getCounterpartyAccountNumber())
+                .amount(amount)
+                .type("CREDIT")
+                .description("Refund for transaction: " + original.getReference()
+                        + (reason != null && !reason.isBlank() ? " (" + reason + ")" : ""))
+                .status("COMPLETED")
                 .build();
-        return approvalService.submitApproval(approvalRequest, httpRequest);
+        Transaction saved = transactionRepository.save(refund);
+
+        adminAuditService.audit(AdminAuditEventType.REFUND_PROCESSED, "TRANSACTION",
+                id.toString(), original.getReference(),
+                "Transaction refunded" + (reason != null && !reason.isBlank() ? " - " + reason : ""),
+                previousStatus, "REFUNDED", httpRequest);
+        log.info("Transaction {} refunded to account {} by {}",
+                original.getReference(), original.getAccountNumber(), getCurrentAdmin());
+
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -170,5 +202,13 @@ public class AdminTransactionService {
                 .status(t.getStatus())
                 .createdAt(t.getCreatedAt())
                 .build();
+    }
+
+    private String getCurrentAdmin() {
+        try {
+            return securityUtil.currentUser().getUsername();
+        } catch (Exception e) {
+            return "unknown";
+        }
     }
 }

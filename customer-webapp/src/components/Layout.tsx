@@ -63,7 +63,6 @@ const adminGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: 'Security & Admin',
     items: [
-      { to: '/admin/approvals', label: 'Approvals', icon: 'check' },
       { to: '/admin/adjustments', label: 'Adjustments', icon: 'wallet' },
       { to: '/admin/admins', label: 'Administrators', icon: 'shield' },
       { to: '/admin/roles', label: 'Roles & Permissions', icon: 'lock' },
@@ -85,7 +84,6 @@ const adminMobileTabs: NavItem[] = [
   { to: '/admin', label: 'Dashboard', icon: 'shield' },
   { to: '/admin/customers', label: 'Customers', icon: 'users' },
   { to: '/admin/transactions', label: 'Transactions', icon: 'receipt' },
-  { to: '/admin/approvals', label: 'Approvals', icon: 'check' },
 ];
 
 const TITLES: Record<string, string> = {
@@ -114,7 +112,6 @@ const TITLES: Record<string, string> = {
   '/admin/beneficiaries': 'Beneficiaries',
   '/admin/roles': 'Roles & Permissions',
   '/admin/admins': 'Administrators',
-  '/admin/approvals': 'Approval Queue',
   '/admin/adjustments': 'Adjustments',
 };
 

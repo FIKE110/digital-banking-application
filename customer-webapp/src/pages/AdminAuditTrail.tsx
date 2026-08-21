@@ -104,7 +104,7 @@ function EventDetailModal({ event, onClose }: { event: AuditEvent; onClose: () =
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>Action</td>
-                <td style={{ padding: '8px 0', fontWeight: 600 }}>{event.action || '—'}</td>
+                <td style={{ padding: '8px 0', fontWeight: 600 }}>{event.action || '-'}</td>
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>Actor</td>
@@ -157,31 +157,31 @@ function EventDetailModal({ event, onClose }: { event: AuditEvent; onClose: () =
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>IP Address</td>
                 <td style={{ padding: '8px 0', fontFamily: 'monospace', fontSize: 12 }}>
-                  {event.ipAddress || '—'}
+                  {event.ipAddress || '-'}
                 </td>
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>User Agent</td>
                 <td style={{ padding: '8px 0', fontSize: 12, wordBreak: 'break-all' }}>
-                  {event.userAgent || '—'}
+                  {event.userAgent || '-'}
                 </td>
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>Service</td>
                 <td style={{ padding: '8px 0', fontFamily: 'monospace', fontSize: 12 }}>
-                  {event.serviceName || '—'}
+                  {event.serviceName || '-'}
                 </td>
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>Request ID</td>
                 <td style={{ padding: '8px 0', fontFamily: 'monospace', fontSize: 12 }}>
-                  {event.requestId || '—'}
+                  {event.requestId || '-'}
                 </td>
               </tr>
               <tr>
                 <td style={{ padding: '8px 0', color: '#6b6b6b' }}>Correlation ID</td>
                 <td style={{ padding: '8px 0', fontFamily: 'monospace', fontSize: 12 }}>
-                  {event.correlationId || '—'}
+                  {event.correlationId || '-'}
                 </td>
               </tr>
             </tbody>
@@ -358,7 +358,7 @@ export default function AdminAuditTrail() {
                 >
                   <td><RiskBadge level={event.riskLevel} /></td>
                   <td className="text-sm" style={{ fontWeight: 600 }}>{event.eventType}</td>
-                  <td className="text-sm">{event.action || '—'}</td>
+                  <td className="text-sm">{event.action || '-'}</td>
                   <td className="text-sm">
                     <div style={{ fontWeight: 500 }}>{event.actorName || event.actorId?.slice(0, 8)}</div>
                     <div style={{ fontSize: 11, color: '#6b6b6b' }}>{event.actorType}</div>
@@ -369,7 +369,7 @@ export default function AdminAuditTrail() {
                   </td>
                   <td><StatusBadge status={event.status} /></td>
                   <td className="text-sm mono">{formatDate(event.occurredAt)}</td>
-                  <td className="text-sm mono">{event.correlationId?.slice(0, 12) || '—'}</td>
+                  <td className="text-sm mono">{event.correlationId?.slice(0, 12) || '-'}</td>
                 </tr>
               ))}
             </tbody>

@@ -180,7 +180,7 @@ export default function AccountDetailPage() {
                   </span>
                   <span className="tx-row__body">
                     <span className="tx-row__title">{t.description || (credit ? 'Money received' : 'Payment sent')}</span>
-                    <span className="tx-row__meta" style={{ marginTop: 10 }}>{formatDateTime(t.createdAt)} · {t.reference?.slice(0, 12) ?? '—'}</span>
+                    <span className="tx-row__meta" style={{ marginTop: 10 }}>{formatDateTime(t.createdAt)} · {t.reference?.slice(0, 12) ?? 'N/A'}</span>
                   </span>
                   <TypeBadge type={t.type} />
                   <span className={`tx-row__amount ${credit ? 'tx-row__amount--credit' : 'tx-row__amount--debit'}`}>

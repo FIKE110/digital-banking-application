@@ -20,7 +20,7 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "account_number", nullable = false, unique = true, length = 10)
+    @Column(name = "account_number", nullable = false, unique = true, length = 20)
     private String accountNumber;
 
     @Column(name = "account_name", nullable = false)

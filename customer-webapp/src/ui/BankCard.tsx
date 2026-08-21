@@ -45,7 +45,7 @@ export default function BankCard({ card }: { card: BankCardView }) {
         </div>
         <div>
           <div className="bank-card__meta-label">Expires</div>
-          <div className="bank-card__meta-value">{card.expiry ?? '—'}</div>
+          <div className="bank-card__meta-value">{card.expiry ?? '-'}</div>
         </div>
         <div className="row" style={{ gap: 6 }}>
           {card.cardNumber && (

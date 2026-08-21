@@ -212,11 +212,24 @@ export interface AdminKyc {
   userId: number;
   username: string;
   email: string;
+  status?: string;
   bvn: string;
   bvnStatus: string;
   nin: string;
   ninStatus: string;
   tier?: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  rejectionReason?: string;
+  submittedAt?: string;
+  approvedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -269,21 +282,4 @@ export interface AdminUser {
   permissions: string[];
   createdAt: string;
   lastLogoutDate?: string;
-}
-
-export interface AdminApproval {
-  id: number;
-  actionType: string;
-  actionPayload: string;
-  requestedBy: number;
-  requestedByName: string;
-  status: string;
-  reviewedBy?: number;
-  reviewedByName?: string;
-  reviewNote?: string;
-  reason?: string;
-  riskLevel: string;
-  correlationId: string;
-  expiresAt: string;
-  createdAt: string;
 }

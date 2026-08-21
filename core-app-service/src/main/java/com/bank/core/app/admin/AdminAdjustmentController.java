@@ -1,10 +1,8 @@
 package com.bank.core.app.admin;
 
 import com.bank.common.dto.admin.AdjustmentRequest;
-import com.bank.common.dto.admin.AdminApprovalResponse;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,23 +21,20 @@ public class AdminAdjustmentController {
     private final AdminAdjustmentService adjustmentService;
 
     @PostMapping("/credit")
-    public ResponseEntity<ApiResponse<AdminApprovalResponse>> manualCredit(
-            @Valid @RequestBody AdjustmentRequest request, HttpServletRequest httpRequest) {
-        return ApiResponseUtil.buildSuccess("Manual credit processed",
-                adjustmentService.manualCredit(request, httpRequest));
+    public ResponseEntity<ApiResponse<String>> manualCredit(@Valid @RequestBody AdjustmentRequest request) {
+        adjustmentService.manualCredit(request);
+        return ApiResponseUtil.buildSuccess("Manual credit executed successfully", "CREDITED");
     }
 
     @PostMapping("/debit")
-    public ResponseEntity<ApiResponse<AdminApprovalResponse>> manualDebit(
-            @Valid @RequestBody AdjustmentRequest request, HttpServletRequest httpRequest) {
-        return ApiResponseUtil.buildSuccess("Manual debit processed",
-                adjustmentService.manualDebit(request, httpRequest));
+    public ResponseEntity<ApiResponse<String>> manualDebit(@Valid @RequestBody AdjustmentRequest request) {
+        adjustmentService.manualDebit(request);
+        return ApiResponseUtil.buildSuccess("Manual debit executed successfully", "DEBITED");
     }
 
     @PostMapping("/balance")
-    public ResponseEntity<ApiResponse<AdminApprovalResponse>> balanceAdjustment(
-            @Valid @RequestBody AdjustmentRequest request, HttpServletRequest httpRequest) {
-        return ApiResponseUtil.buildSuccess("Balance adjustment submitted",
-                adjustmentService.balanceAdjustment(request, httpRequest));
+    public ResponseEntity<ApiResponse<String>> balanceAdjustment(@Valid @RequestBody AdjustmentRequest request) {
+        adjustmentService.balanceAdjustment(request);
+        return ApiResponseUtil.buildSuccess("Balance adjustment executed successfully", "ADJUSTED");
     }
 }

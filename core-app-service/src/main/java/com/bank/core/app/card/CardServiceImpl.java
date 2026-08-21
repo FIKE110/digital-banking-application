@@ -37,11 +37,13 @@ public class CardServiceImpl implements CardService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.bank.core.app.kyc.KycGate kycGate;
 
     @Override
     @Transactional
     public CardResponse create(CreateCardRequest request) {
         User currentUser = getCurrentUser();
+        kycGate.requireApproved(currentUser.getId(), "card issuance");
 
         Account account = accountRepository.findByAccountNumber(request.getAccountNumber())
                 .orElseThrow(() -> new IllegalArgumentException(

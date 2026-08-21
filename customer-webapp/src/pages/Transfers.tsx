@@ -335,7 +335,7 @@ export default function Transfers() {
                     </div>
                     <div className="receipt__row">
                       <span className="muted">Description</span>
-                      <span>{desc || '—'}</span>
+                      <span>{desc || '-'}</span>
                     </div>
                     <div className="receipt__row receipt__row--total">
                       <span>Total</span>
@@ -439,7 +439,7 @@ export default function Transfers() {
                 { label: 'From account', value: selectedTransfer.sourceAccountNumber },
                 { label: 'To account', value: selectedTransfer.destinationAccountNumber },
                 { label: 'Amount', value: formatMoney(selectedTransfer.amount, currency) },
-                { label: 'Description', value: selectedTransfer.description || '—' },
+                { label: 'Description', value: selectedTransfer.description || '-' },
               ].map(row => (
                 <div key={row.label} className="row row--between" style={{ gap: 12 }}>
                   <span className="muted text-sm">{row.label}</span>
@@ -495,7 +495,7 @@ export default function Transfers() {
                             {auditTrail.map(event => (
                               <tr key={event.id}>
                                 <td className="text-sm">{event.eventType}</td>
-                                <td className="text-sm">{event.action || '—'}</td>
+                                <td className="text-sm">{event.action || '-'}</td>
                                 <td className="text-sm mono">{event.actorId ? `${event.actorType}: ${event.actorId.slice(0, 8)}` : 'System'}</td>
                                 <td><StatusBadge status={event.status} /></td>
                                 <td className="text-sm mono">{formatDateTime(event.occurredAt)}</td>

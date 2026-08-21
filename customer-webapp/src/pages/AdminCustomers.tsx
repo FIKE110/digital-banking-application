@@ -99,10 +99,10 @@ export default function AdminCustomers() {
                     </span>
                   </td>
                   <td className="text-sm">{c.email}</td>
-                  <td className="mono text-sm">{c.uid?.slice(0, 12) ?? '—'}</td>
+                  <td className="mono text-sm">{c.uid?.slice(0, 12) ?? '-'}</td>
                   <td className="text-sm">{c.accountCount}</td>
                   <td><StatusBadge status={c.status} /></td>
-                  <td className="text-sm">{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
+                  <td className="text-sm">{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
                   <td>
                     <button className="btn btn--ghost btn--sm" onClick={() => openDetail(c)}>
                       <Icon name="eye" size={13} /> View
@@ -136,15 +136,15 @@ export default function AdminCustomers() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
               <div className="surface" style={{ padding: 'var(--space-3)' }}>
                 <div className="muted text-xs">PHONE</div>
-                <div className="font-semibold text-sm">{detail.phoneNumber || '—'}</div>
+                <div className="font-semibold text-sm">{detail.phoneNumber || '-'}</div>
               </div>
               <div className="surface" style={{ padding: 'var(--space-3)' }}>
                 <div className="muted text-xs">GENDER</div>
-                <div className="font-semibold text-sm">{detail.gender || '—'}</div>
+                <div className="font-semibold text-sm">{detail.gender || '-'}</div>
               </div>
               <div className="surface" style={{ padding: 'var(--space-3)' }}>
                 <div className="muted text-xs">DATE OF BIRTH</div>
-                <div className="font-semibold text-sm">{detail.dateOfBirth || '—'}</div>
+                <div className="font-semibold text-sm">{detail.dateOfBirth || '-'}</div>
               </div>
               <div className="surface" style={{ padding: 'var(--space-3)' }}>
                 <div className="muted text-xs">KYC STATUS</div>

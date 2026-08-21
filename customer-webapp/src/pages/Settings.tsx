@@ -140,11 +140,11 @@ export default function Settings() {
             <div className="stack" style={{ gap: 10, marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--color-border)' }}>
               <div className="row row--between">
                 <span className="muted text-sm">Username</span>
-                <span className="mono text-sm">{form.username || '—'}</span>
+                <span className="mono text-sm">{form.username || '-'}</span>
               </div>
               <div className="row row--between">
                 <span className="muted text-sm">Email</span>
-                <span className="text-sm">{form.email || '—'}</span>
+                <span className="text-sm">{form.email || '-'}</span>
               </div>
             </div>
           </div>

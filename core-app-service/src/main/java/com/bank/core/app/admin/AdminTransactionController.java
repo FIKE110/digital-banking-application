@@ -1,6 +1,5 @@
 package com.bank.core.app.admin;
 
-import com.bank.common.dto.admin.AdminApprovalResponse;
 import com.bank.common.dto.transaction.TransactionResponse;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
@@ -53,22 +52,22 @@ public class AdminTransactionController {
     }
 
     @PostMapping("/{id}/reverse")
-    public ResponseEntity<ApiResponse<AdminApprovalResponse>> reverseTransaction(
+    public ResponseEntity<ApiResponse<TransactionResponse>> reverseTransaction(
             @PathVariable UUID id,
             @RequestBody(required = false) Map<String, String> body,
             HttpServletRequest httpRequest) {
         String reason = body != null ? body.get("reason") : null;
-        return ApiResponseUtil.buildSuccess("Reversal submitted for approval",
+        return ApiResponseUtil.buildSuccess("Transaction reversed",
                 transactionService.reverseTransaction(id, reason, httpRequest));
     }
 
     @PostMapping("/{id}/refund")
-    public ResponseEntity<ApiResponse<AdminApprovalResponse>> refundTransaction(
+    public ResponseEntity<ApiResponse<TransactionResponse>> refundTransaction(
             @PathVariable UUID id,
             @RequestBody(required = false) Map<String, String> body,
             HttpServletRequest httpRequest) {
         String reason = body != null ? body.get("reason") : null;
-        return ApiResponseUtil.buildSuccess("Refund submitted for approval",
+        return ApiResponseUtil.buildSuccess("Transaction refunded",
                 transactionService.refundTransaction(id, reason, httpRequest));
     }
 

@@ -7,7 +7,7 @@ export default function NotFound() {
       <PageHeader title="Page not found" subtitle="The page you are looking for doesn't exist." />
       <EmptyState
         icon="search"
-        title="404 — Lost in the vault"
+        title="404: Lost in the vault"
         body="The page may have been moved, renamed, or never existed."
         actionLabel="Back to dashboard"
         action={() => { window.location.href = '/dashboard'; }}

@@ -10,6 +10,10 @@ import com.bank.common.dto.account.UpdateAccountStatusRequest;
 import com.bank.common.enums.AccountStatus;
 import com.bank.common.enums.AccountType;
 import com.bank.common.util.IdGenerator;
+import com.bank.core.app.ledger.GlAccount;
+import com.bank.core.app.ledger.JournalPosting;
+import com.bank.core.app.ledger.LedgerLeg;
+import com.bank.core.app.ledger.LedgerPostingService;
 import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
 import com.bank.core.data.account.Account;
@@ -18,9 +22,11 @@ import com.bank.core.data.transaction.Transaction;
 import com.bank.core.data.transaction.TransactionRepository;
 import com.bank.core.data.user.User;
 import com.bank.core.data.user.UserRepository;
-import jakarta.transaction.Transactional;
+import com.bank.core.data.ledger.LedgerSide;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -46,6 +52,10 @@ public class AccountServiceImpl implements AccountService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final LedgerPostingService ledgerPostingService;
+
+    @Value("${app.account.number-length:10}")
+    private int accountNumberLength;
 
     @Transactional
     @Override
@@ -105,6 +115,12 @@ public class AccountServiceImpl implements AccountService {
                     .status("COMPLETED")
                     .build();
             transactionRepository.save(creditEntry);
+
+            ledgerPostingService.post(new JournalPosting(reference, "Initial deposit",
+                    List.of(
+                            LedgerLeg.gl(GlAccount.CASH, LedgerSide.DEBIT, openingBalance),
+                            LedgerLeg.customer(savedAccount.getAccountNumber(), LedgerSide.CREDIT, openingBalance)
+                    )));
         }
 
         notificationService.notify(currentUser.getId(), "SYSTEM", "Account opened",
@@ -286,6 +302,12 @@ public class AccountServiceImpl implements AccountService {
                 .build();
         transactionRepository.save(creditEntry);
 
+        ledgerPostingService.post(new JournalPosting(reference, description,
+                List.of(
+                        LedgerLeg.gl(GlAccount.CASH, LedgerSide.DEBIT, amount),
+                        LedgerLeg.customer(account.getAccountNumber(), LedgerSide.CREDIT, amount)
+                )));
+
         emitDepositEvent(updatedAccount, currentUser, amount, reference);
 
         notificationService.notify(currentUser.getId(), "CREDIT", "Deposit received",
@@ -339,12 +361,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     private String generateUniqueAccountNumber() {
+        int length = Math.max(1, Math.min(accountNumberLength, 20));
         Random random = new Random();
         String accountNumber;
         do {
-            // Generate 10-digit random number (ensuring it doesn't start with 0)
-            long randomNum = 1_000_000_000L + (long) (random.nextDouble() * 9_000_000_000L);
-            accountNumber = String.valueOf(randomNum);
+            StringBuilder sb = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                sb.append(random.nextInt(10));
+            }
+            accountNumber = sb.toString();
         } while (accountRepository.existsByAccountNumber(accountNumber));
 
         return accountNumber;

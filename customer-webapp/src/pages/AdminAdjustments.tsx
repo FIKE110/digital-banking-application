@@ -17,25 +17,18 @@ export default function AdminAdjustments() {
   const [kind, setKind] = useState<AdjustKind>('credit');
   const [form, setForm] = useState({ accountNumber: '', amount: '', reason: '', reference: '' });
   const [busy, setBusy] = useState(false);
-  const [queued, setQueued] = useState(false);
 
   const submit = async () => {
     if (!form.accountNumber.trim() || !form.amount) return;
     setBusy(true);
-    setQueued(false);
     try {
-      const res = await adminAdjust(kind, {
+      await adminAdjust(kind, {
         accountNumber: form.accountNumber.trim(),
         amount: Number(form.amount),
         reason: form.reason.trim() || undefined,
         reference: form.reference.trim() || undefined,
       });
-      if (res.data) {
-        setQueued(true);
-        success(`Submitted for approval (queue #${res.data.id})`);
-      } else {
-        success('Adjustment executed successfully');
-      }
+      success('Adjustment executed successfully');
       setForm({ accountNumber: '', amount: '', reason: '', reference: '' });
     } catch (err: any) {
       toastError(err.response?.data?.message || 'Failed to process adjustment');
@@ -48,7 +41,7 @@ export default function AdminAdjustments() {
     <div className="stack" style={{ gap: 24 }}>
       <PageHeader
         title="Admin · Adjustments"
-        subtitle="Credit, debit or correct account balances. Amounts of ₦1,000,000 and above require approval."
+        subtitle="Credit, debit or correct account balances. Adjustments execute immediately."
         actions={<span className="badge badge--warning"><Icon name="shield" size={11} /> Administrator</span>}
       />
 
@@ -114,11 +107,10 @@ export default function AdminAdjustments() {
             <button className="btn btn--brand" onClick={submit} disabled={busy || !form.accountNumber.trim() || !form.amount}>
               <Icon name="check" size={14} /> {KIND_LABELS[kind]}
             </button>
-            {queued && <span className="badge badge--warning"><Icon name="clock" size={11} /> Queued for approval</span>}
           </div>
 
           <p className="text-xs muted" style={{ margin: 0 }}>
-            Adjustments below ₦1,000,000 execute immediately. Larger adjustments enter the approval queue for a second administrator.
+            Adjustments are executed immediately and recorded in the double-entry ledger with the audit trail.
           </p>
         </div>
       </div>

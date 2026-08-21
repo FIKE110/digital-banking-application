@@ -4,9 +4,14 @@ import com.bank.common.dto.transfer.ResolvedAccountResponse;
 import com.bank.common.dto.transfer.TransferRequest;
 import com.bank.common.dto.transfer.TransferResponse;
 import com.bank.common.util.IdGenerator;
+import com.bank.core.app.ledger.JournalPosting;
+import com.bank.core.app.ledger.LedgerLeg;
+import com.bank.core.app.ledger.LedgerPostingService;
 import com.bank.core.data.account.Account;
 import com.bank.core.data.account.AccountRepository;
+import com.bank.core.data.ledger.LedgerSide;
 import com.bank.core.data.transaction.Transaction;
+import org.springframework.transaction.annotation.Transactional;
 import com.bank.core.data.transaction.TransactionRepository;
 import com.bank.core.data.transfer.Transfer;
 import com.bank.core.data.transfer.TransferRepository;
@@ -16,7 +21,6 @@ import com.bank.core.app.notification.NotificationService;
 import com.bank.core.app.outbox.OutboxService;
 import com.bank.core.app.pin.PinService;
 import tools.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -44,11 +48,14 @@ public class TransferServiceImpl implements TransferService {
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
     private final PinService pinService;
+    private final com.bank.core.app.kyc.KycGate kycGate;
+    private final LedgerPostingService ledgerPostingService;
 
     @Override
     @Transactional
     public TransferResponse initiate(TransferRequest request) {
         User currentUser = getCurrentUser();
+        kycGate.requireApproved(currentUser.getId(), "transfers");
 
         // Idempotency: replay the same request returns the original transfer
         if (request.getIdempotencyKey() != null && !request.getIdempotencyKey().isBlank()) {
@@ -131,6 +138,15 @@ public class TransferServiceImpl implements TransferService {
         createTransactionEntries(reference, sourceAccount, destAccount, amount,
                 request.getDescription(), "COMPLETED");
 
+        // Post the double-entry journal (Dr source, Cr destination)
+        ledgerPostingService.post(new JournalPosting(reference,
+                request.getDescription() != null && !request.getDescription().isBlank()
+                        ? request.getDescription() : "Transfer",
+                List.of(
+                        LedgerLeg.customer(sourceAccount.getAccountNumber(), LedgerSide.DEBIT, amount),
+                        LedgerLeg.customer(destAccount.getAccountNumber(), LedgerSide.CREDIT, amount)
+                )));
+
         // Emit outbox event for source user (debit notification)
         emitTransferEvent(sourceAccount, currentUser, amount, "debit", sourceAccount.getBalance(), reference);
 
@@ -212,6 +228,7 @@ public class TransferServiceImpl implements TransferService {
     @Override
     @Transactional
     public TransferResponse reverse(UUID id) {
+        kycGate.requireApproved(getCurrentUser().getId(), "transfer reversals");
         // Find original transfer
         Transfer originalTransfer = transferRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Transfer not found: " + id));
@@ -270,6 +287,14 @@ public class TransferServiceImpl implements TransferService {
         // Create transaction ledger entries for reversal
         createTransactionEntries(reversalRef, destAccount, sourceAccount, amount,
                 "Reversal: " + originalTransfer.getReference(), "REVERSAL");
+
+        // Post the double-entry journal for the reversal (Dr destination, Cr source)
+        ledgerPostingService.post(new JournalPosting(reversalRef,
+                "Reversal: " + originalTransfer.getReference(),
+                List.of(
+                        LedgerLeg.customer(destAccount.getAccountNumber(), LedgerSide.DEBIT, amount),
+                        LedgerLeg.customer(sourceAccount.getAccountNumber(), LedgerSide.CREDIT, amount)
+                )));
 
         // Emit outbox event for reversal notification
         emitTransferEvent(sourceAccount, currentUser, amount, "reversal", sourceAccount.getBalance(), reversalRef);

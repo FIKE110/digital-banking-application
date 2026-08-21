@@ -306,7 +306,7 @@ export default function TransactionHistory() {
               </div>
               <div className="receipt__row">
                 <span className="muted">Counterparty</span>
-                <span className="mono text-sm">{selected.counterpartyAccountNumber || '—'}</span>
+                <span className="mono text-sm">{selected.counterpartyAccountNumber || '-'}</span>
               </div>
               <div className="receipt__row">
                 <span className="muted">Amount</span>

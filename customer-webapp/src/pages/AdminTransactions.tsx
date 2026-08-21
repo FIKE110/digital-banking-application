@@ -54,10 +54,10 @@ export default function AdminTransactions() {
     try {
       if (kind === 'reverse') {
         await adminReverseTransaction(actionTx.id, reason || undefined);
-        success('Reversal submitted for approval');
+        success('Transaction reversed');
       } else {
         await adminRefundTransaction(actionTx.id, reason || undefined);
-        success('Refund submitted for approval');
+        success('Transaction refunded');
       }
       setActionTx(null);
       setActionKind('');
@@ -149,7 +149,7 @@ export default function AdminTransactions() {
                         className="btn btn--ghost btn--sm"
                         disabled={busyId === tx.id}
                         onClick={() => { setActionTx(tx); setActionKind('reverse'); setReason(''); }}
-                        title="Submit reversal for approval"
+                        title="Reverse transaction"
                       >
                         <Icon name="refresh" size={13} /> Reverse
                       </button>
@@ -157,7 +157,7 @@ export default function AdminTransactions() {
                         className="btn btn--ghost btn--sm"
                         disabled={busyId === tx.id}
                         onClick={() => { setActionTx(tx); setActionKind('refund'); setReason(''); }}
-                        title="Submit refund for approval"
+                        title="Refund transaction"
                       >
                         <Icon name="arrowDownLeft" size={13} /> Refund
                       </button>
@@ -191,20 +191,20 @@ export default function AdminTransactions() {
       <Dialog
         open={!!actionTx}
         onClose={() => setActionTx(null)}
-        title={actionKind === 'reverse' ? 'Submit reversal for approval' : 'Submit refund for approval'}
+        title={actionKind === 'reverse' ? 'Reverse transaction' : 'Refund transaction'}
         subtitle={actionTx ? `${actionTx.reference} · ${formatMoney(actionTx.amount, 'NGN')}` : undefined}
         footer={
           <>
             <button className="btn btn--ghost" onClick={() => setActionTx(null)}>Cancel</button>
             <button className="btn btn--brand" onClick={() => runAction(actionKind as 'reverse' | 'refund')}>
-              Submit for approval
+              {actionKind === 'reverse' ? 'Reverse transaction' : 'Refund transaction'}
             </button>
           </>
         }
       >
         <div className="stack" style={{ gap: 12 }}>
           <p className="text-sm" style={{ margin: 0 }}>
-            This action will be queued for review by another administrator before it is executed.
+            This action is executed immediately. It is recorded in the double-entry ledger and the audit trail.
           </p>
           <div className="field">
             <label className="field__label">Reason</label>

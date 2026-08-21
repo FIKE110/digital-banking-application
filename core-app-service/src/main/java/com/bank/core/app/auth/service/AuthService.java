@@ -58,6 +58,8 @@ public class AuthService {
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final com.bank.core.data.user.profile.UserProfileRepository userProfileRepository;
+    private final com.bank.core.data.user.kyc.KycRepository kycRepository;
 
     @Transactional
     public LoginResponseDto loginUser(LoginRequestDto loginRequestDto) {
@@ -223,12 +225,25 @@ public class AuthService {
             user.getPermissions().forEach(p->permissions.add(p.getPermissionName()));
         }
 
+        com.bank.common.enums.KycStatus kycStatus = null;
+        boolean kycVerified = false;
+        com.bank.core.data.user.kyc.UserKyc kyc = userProfileRepository.findByUserId(user.getId())
+                .flatMap(profile -> kycRepository.findByUserUserId(profile.getUserId()))
+                .orElse(null);
+        if (kyc != null) {
+            kycStatus = kyc.getStatus() != null ? kyc.getStatus() : com.bank.common.enums.KycStatus.NOT_STARTED;
+            kycVerified = com.bank.common.enums.VerificationStatus.VERIFIED == kyc.getBvnVerificationStatus()
+                    && com.bank.common.enums.VerificationStatus.VERIFIED == kyc.getNinVerificationStatus();
+        }
+
         return UserResponseDto.builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .uid(user.getUid())
                 .roleNames(roleNames)
                 .permissions(permissions)
+                .kycStatus(kycStatus != null ? kycStatus.name() : null)
+                .kycVerified(kycVerified)
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

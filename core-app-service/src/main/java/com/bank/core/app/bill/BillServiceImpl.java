@@ -43,11 +43,13 @@ public class BillServiceImpl implements BillService {
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
     private final PinService pinService;
+    private final com.bank.core.app.kyc.KycGate kycGate;
 
     @Override
     @Transactional
     public BillPaymentResponse pay(BillPaymentRequest request) {
         User currentUser = getCurrentUser();
+        kycGate.requireApproved(currentUser.getId(), "bill payments");
 
         // Verify transaction PIN
         if (request.getPin() == null || request.getPin().isBlank()) {

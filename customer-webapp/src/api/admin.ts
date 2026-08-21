@@ -1,7 +1,6 @@
 import client from './client';
 import type {
   AdminAccount,
-  AdminApproval,
   AdminBeneficiary,
   AdminCard,
   AdminCustomer,
@@ -33,10 +32,10 @@ export const adminListTransactions = (params: Record<string, unknown> = {}) =>
   client.get<ApiResponse<Paginated<Transaction>>>('/admin/transactions', { params }).then(r => r.data);
 
 export const adminReverseTransaction = (id: string, reason?: string) =>
-  client.post<ApiResponse<AdminApproval>>(`/admin/transactions/${id}/reverse`, { reason }).then(r => r.data);
+  client.post<ApiResponse<Transaction>>(`/admin/transactions/${id}/reverse`, { reason }).then(r => r.data);
 
 export const adminRefundTransaction = (id: string, reason?: string) =>
-  client.post<ApiResponse<AdminApproval>>(`/admin/transactions/${id}/refund`, { reason }).then(r => r.data);
+  client.post<ApiResponse<Transaction>>(`/admin/transactions/${id}/refund`, { reason }).then(r => r.data);
 
 export const adminHoldTransaction = (id: string) =>
   client.post<ApiResponse<Transaction>>(`/admin/transactions/${id}/hold`).then(r => r.data);
@@ -101,17 +100,5 @@ export const adminCreateAdmin = (data: { username: string; email: string; passwo
 export const adminSetAdminStatus = (id: number, enabled: boolean) =>
   client.patch<ApiResponse<AdminUser>>(`/admin/admins/${id}/status`, { enabled }).then(r => r.data);
 
-export const adminSubmitApproval = (data: { actionType: string; actionDetails: Record<string, unknown>; riskLevel: string; reason?: string }) =>
-  client.post<ApiResponse<AdminApproval>>('/admin/approvals', data).then(r => r.data);
-
-export const adminListApprovals = (params: { page?: number; size?: number; status?: string; actionType?: string } = {}) =>
-  client.get<ApiResponse<Paginated<AdminApproval>>>('/admin/approvals', { params }).then(r => r.data);
-
-export const adminApproveApproval = (id: number, note?: string) =>
-  client.post<ApiResponse<AdminApproval>>(`/admin/approvals/${id}/approve`, { note }).then(r => r.data);
-
-export const adminRejectApproval = (id: number, note?: string) =>
-  client.post<ApiResponse<AdminApproval>>(`/admin/approvals/${id}/reject`, { note }).then(r => r.data);
-
 export const adminAdjust = (type: 'credit' | 'debit' | 'balance', data: { accountNumber: string; amount: number; reason?: string; reference?: string }) =>
-  client.post<ApiResponse<AdminApproval | null>>(`/admin/adjustments/${type}`, data).then(r => r.data);
+  client.post<ApiResponse<null>>(`/admin/adjustments/${type}`, data).then(r => r.data);

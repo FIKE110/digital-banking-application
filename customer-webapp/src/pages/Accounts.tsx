@@ -99,7 +99,7 @@ export default function Accounts() {
         <EmptyState
           icon="wallet"
           title="No accounts yet"
-          body="Open your first account to start banking — savings or checking, in Naira (NGN)."
+          body="Open your first account to start banking. Savings or checking, in Naira (NGN)."
           actionLabel="Open account"
           action={() => setShowForm(true)}
         />

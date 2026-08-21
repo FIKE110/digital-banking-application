@@ -83,6 +83,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponseUtil.buildError("BAD_REQUEST", ex.getMessage(), request.getRequestURI()));
     }
 
+    @ExceptionHandler(KycRequiredException.class)
+    public ResponseEntity<ErrorResponse> handleKycRequired(KycRequiredException ex, HttpServletRequest request) {
+        log.warn("KYC required: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponseUtil.buildError("KYC_REQUIRED", ex.getMessage(), request.getRequestURI()));
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ErrorResponse> handleSecurity(SecurityException ex, HttpServletRequest request) {
         log.warn("Access denied: {}", ex.getMessage());

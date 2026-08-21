@@ -128,7 +128,7 @@ export default function AdminRoles() {
               {roles.map(role => (
                 <tr key={role.id}>
                   <td className="font-semibold">{role.roleName}</td>
-                  <td className="text-sm">{role.description || '—'}</td>
+                  <td className="text-sm">{role.description || '-'}</td>
                   <td>
                     <div className="row" style={{ gap: 4, flexWrap: 'wrap' }}>
                       {role.permissions.slice(0, 4).map(p => (

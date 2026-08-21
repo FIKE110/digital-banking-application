@@ -118,8 +118,8 @@ export default function AdminKyc() {
                 <tr key={r.id}>
                   <td className="font-semibold">{r.username}</td>
                   <td className="text-sm">{r.email}</td>
-                  <td className="mono text-sm">{r.bvn || '—'}</td>
-                  <td className="mono text-sm">{r.nin || '—'}</td>
+                  <td className="mono text-sm">{r.bvn || '-'}</td>
+                  <td className="mono text-sm">{r.nin || '-'}</td>
                   <td><span className="badge badge--success">{r.tier || 'TIER_1'}</span></td>
                   <td><StatusBadge status={r.bvnStatus || 'PENDING'} /></td>
                   <td className="text-sm">{formatDate(r.createdAt)}</td>

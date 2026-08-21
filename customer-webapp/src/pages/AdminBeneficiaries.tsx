@@ -94,7 +94,7 @@ export default function AdminBeneficiaries() {
                 <tr key={b.id}>
                   <td className="font-semibold">{b.alias}</td>
                   <td className="mono text-sm">{b.accountNumber}</td>
-                  <td className="text-sm">{b.bankName || '—'}</td>
+                  <td className="text-sm">{b.bankName || '-'}</td>
                   <td className="text-sm">{b.username || `User #${b.userId}`}</td>
                   <td className="text-sm">{formatDate(b.createdAt)}</td>
                   <td>

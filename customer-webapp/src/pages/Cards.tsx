@@ -83,7 +83,7 @@ export default function Cards() {
         await refresh('Card unfrozen');
       } else {
         await freezeCard(card.id);
-        await refresh('Card frozen — payments will be declined');
+        await refresh('Card frozen. Payments will be declined');
       }
     } catch (err: any) {
       toastError(err.response?.data?.message || 'Operation failed');
@@ -137,7 +137,7 @@ export default function Cards() {
     setBusy(true);
     try {
       await replaceCard(active.id);
-      await refresh('Card replaced — the old card is no longer active');
+      await refresh('Card replaced. The old card is no longer active');
       close();
     } catch (err: any) {
       toastError(err.response?.data?.message || 'Failed to replace card');
@@ -285,8 +285,8 @@ export default function Cards() {
         <form onSubmit={handleCreate} className="stack stack--4">
           <Field label="Card type">
             <Select value={cardType} onChange={e => setCardType(e.target.value as 'PHYSICAL' | 'VIRTUAL')}>
-              <option value="PHYSICAL">Physical — for use in stores and ATMs</option>
-              <option value="VIRTUAL">Virtual — for online payments</option>
+              <option value="PHYSICAL">Physical (for use in stores and ATMs)</option>
+              <option value="VIRTUAL">Virtual (for online payments)</option>
             </Select>
           </Field>
           <Field label="Linked account">

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { KycProvider } from './contexts/KycContext';
 import ProtectedRoute, { AdminRoute } from './components/ProtectedRoute';
 import SecurityPin from './pages/SecurityPin';
 import Kyc from './pages/Kyc';
@@ -30,7 +31,6 @@ import AdminBeneficiaries from './pages/AdminBeneficiaries';
 import AdminPayments from './pages/AdminPayments';
 import AdminRoles from './pages/AdminRoles';
 import AdminAdmins from './pages/AdminAdmins';
-import AdminApprovals from './pages/AdminApprovals';
 import AdminAdjustments from './pages/AdminAdjustments';
 import AdminLogin from './pages/AdminLogin';
 import Cards from './pages/Cards';
@@ -45,7 +45,8 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
+            <KycProvider>
+              <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
@@ -80,11 +81,11 @@ function App() {
                 <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
                 <Route path="/admin/roles" element={<AdminRoute><AdminRoles /></AdminRoute>} />
                 <Route path="/admin/admins" element={<AdminRoute><AdminAdmins /></AdminRoute>} />
-                <Route path="/admin/approvals" element={<AdminRoute><AdminApprovals /></AdminRoute>} />
                 <Route path="/admin/adjustments" element={<AdminRoute><AdminAdjustments /></AdminRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
+            </KycProvider>
           </AuthProvider>
         </BrowserRouter>
       </ToastProvider>

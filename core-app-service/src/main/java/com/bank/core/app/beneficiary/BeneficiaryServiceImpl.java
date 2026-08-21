@@ -25,6 +25,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     private final BeneficiaryRepository beneficiaryRepository;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final com.bank.core.app.kyc.KycGate kycGate;
 
     @Override
     public List<BeneficiaryResponse> findAll() {
@@ -39,6 +40,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     @Transactional
     public BeneficiaryResponse create(BeneficiaryRequest request) {
         User currentUser = getCurrentUser();
+        kycGate.requireApproved(currentUser.getId(), "saving beneficiaries");
 
         Account account = accountRepository.findByAccountNumber(request.getAccountNumber())
                 .orElseThrow(() -> new IllegalArgumentException(
