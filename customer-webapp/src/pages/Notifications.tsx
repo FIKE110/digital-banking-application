@@ -172,9 +172,11 @@ export default function Notifications() {
                       {n.title}
                       {!n.read && <Badge tone="brand">NEW</Badge>}
                     </span>
-                    <span className="tx-row__meta">{n.body}</span>
+                    <span className="tx-row__meta">
+                      {n.body} · <span className="show-mobile">{formatDate(n.createdAt)}</span>
+                    </span>
                   </span>
-                  <time className="muted text-xs" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                  <time className="muted text-xs hidden-mobile" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
                     {formatDate(n.createdAt)}
                   </time>
                 </button>

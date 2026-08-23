@@ -17,7 +17,7 @@ const KycContext = createContext<KycContextType>(null!);
 export function KycProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth();
   const [kyc, setKyc] = useState<KycStatus | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     if (!token) {

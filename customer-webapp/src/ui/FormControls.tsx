@@ -40,12 +40,13 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   icon?: string;
   suffix?: string;
+  action?: ReactNode;
   inputRef?: React.Ref<HTMLInputElement>;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ error, icon, suffix, className, inputRef, ...rest }, ref) => (
-    <div className="input-group" style={{ width: '100%' }}>
+  ({ error, icon, suffix, action, className, inputRef, ...rest }, ref) => (
+    <div className={`input-group ${action ? 'input-group--action' : ''}`} style={{ width: '100%' }}>
       {icon && (
         <span className="input-group__icon">
           <Icon name={icon} size={17} />
@@ -57,6 +58,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {...rest}
       />
       {suffix && <span className="input-suffix">{suffix}</span>}
+      {action && <span className="input-group__action">{action}</span>}
     </div>
   )
 );

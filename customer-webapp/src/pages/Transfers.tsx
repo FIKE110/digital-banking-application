@@ -197,7 +197,7 @@ export default function Transfers() {
                   <StatusBadge status={completed.status} />
                 </div>
               </div>
-              <div className="row" style={{ justifyContent: 'center', marginTop: 24 }}>
+              <div className="row row--actions" style={{ justifyContent: 'center', marginTop: 24 }}>
                 <Button
                   variant="secondary"
                   icon="download"
@@ -220,7 +220,7 @@ export default function Transfers() {
             </div>
           ) : (
             <>
-              <div className="row" style={{ gap: 10, marginBottom: 24 }} aria-label="Transfer steps">
+              <div className="row row--wrap" style={{ gap: 10, marginBottom: 24 }} aria-label="Transfer steps">
                 <span className={`badge ${step === 1 ? 'badge--brand' : 'badge--success'}`}>
                   <Icon name={step === 1 ? 'edit' : 'check'} size={11} /> 1 · Details
                 </span>
@@ -309,7 +309,7 @@ export default function Transfers() {
 
                   {dest === source && <p className="field__error"><Icon name="alert" size={13} /> Source and destination must differ</p>}
 
-                  <div className="row" style={{ justifyContent: 'flex-end' }}>
+                  <div className="row row--actions" style={{ justifyContent: 'flex-end' }}>
                     <Link to="/beneficiaries" className="btn btn--ghost btn--sm">
                       Manage beneficiaries
                     </Link>
@@ -355,7 +355,7 @@ export default function Transfers() {
                       required
                     />
                   </Field>
-                  <div className="row" style={{ justifyContent: 'flex-end' }}>
+                  <div className="row row--actions" style={{ justifyContent: 'flex-end' }}>
                     <Button variant="secondary" onClick={back}>Back</Button>
                     <Button onClick={submit} loading={busy} icon="send">Confirm & send</Button>
                   </div>

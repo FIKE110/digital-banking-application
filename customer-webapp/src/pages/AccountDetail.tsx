@@ -103,7 +103,7 @@ export default function AccountDetailPage() {
         }
       />
 
-      <div className="hero">
+      <div>
         <div className="hero__top">
           <span className="hero__label">Available balance</span>
           <StatusBadge status={account.status} />

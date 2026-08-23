@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hidden, setHidden] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [depAccount, setDepAccount] = useState('');
   const [depAmount, setDepAmount] = useState('');
@@ -101,6 +102,17 @@ export default function Dashboard() {
     }
   };
 
+  const copyAccountNumber = async () => {
+    if (!primary?.accountNumber) return;
+    try {
+      await navigator.clipboard.writeText(primary.accountNumber);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      toastError('Could not copy account number');
+    }
+  };
+
   const quickActions: QuickAction[] = [
     { label: 'Send money', icon: 'send', to: '/transfers' },
     { label: 'Deposit', icon: 'arrowDownLeft', onClick: () => setDepositOpen(true) },
@@ -128,7 +140,7 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      <div className="hero">
+      <div>
         <div className="hero__top">
           <span className="hero__label">Total balance</span>
           <button
@@ -144,20 +156,37 @@ export default function Dashboard() {
           {formatMoney(total, primaryCurrency)}
         </div>
         <div className="hero__details">
-          <div>
+          <div className="hero__stat">
             <div className="hero__stat-label">Primary account</div>
-            <div className="hero__stat-value mono">{primary?.accountNumber ?? '-'}</div>
+            <div className="hero__stat-value mono">
+              <span>{primary?.accountNumber ?? '—'}</span>
+              {primary?.accountNumber && (
+                <button
+                  type="button"
+                  className="hero__copy"
+                  onClick={copyAccountNumber}
+                  aria-label="Copy account number"
+                >
+                  <Icon name={copied ? 'check' : 'copy'} size={13} />
+                </button>
+              )}
+            </div>
           </div>
-          <div>
+          <div className="hero__stat">
             <div className="hero__stat-label">Account type</div>
-            <div className="hero__stat-value">{primary?.accountType ?? '-'}</div>
-          </div>
-          <div>
-            <div className="hero__stat-label">This month</div>
             <div className="hero__stat-value">
-              <span style={{ color: '#00c853' }}>+{formatMoney(income, primaryCurrency)}</span>
-              {' '}
-              <span style={{ color: '#ff1744' }}>−{formatMoney(spending, primaryCurrency)}</span>
+              <span className="hero__pill">{primary?.accountType ?? '—'}</span>
+            </div>
+          </div>
+          <div className="hero__stat">
+            <div className="hero__stat-label">This month</div>
+            <div className="hero__stat-value hero__deltas">
+              <span className="hero__delta hero__delta--in">
+                <Icon name="arrowDownLeft" size={13} />+{formatMoney(income, primaryCurrency)}
+              </span>
+              <span className="hero__delta hero__delta--out">
+                <Icon name="arrowUpRight" size={13} />−{formatMoney(spending, primaryCurrency)}
+              </span>
             </div>
           </div>
         </div>
@@ -259,7 +288,7 @@ export default function Dashboard() {
                     </span>
                     <span className="tx-row__body">
                       <span className="tx-row__title">{t.description || (credit ? 'Money received' : 'Payment sent')}</span>
-                      <span className="tx-row__meta">{formatDateTime(t.createdAt)} · {t.accountNumber}</span>
+                      <span className="tx-row__meta"> {formatDateTime(t.createdAt)} · {t.accountNumber}</span>
                     </span>
                     <span className={`tx-row__amount ${credit ? 'tx-row__amount--credit' : 'tx-row__amount--debit'}`}>
                       {credit ? '+' : '−'}{formatMoney(t.amount, currencyFor(t.accountNumber))}

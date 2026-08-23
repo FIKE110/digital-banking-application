@@ -302,12 +302,6 @@ export default function Kyc() {
         {step === 1 && (
           <form className="stack" style={{ gap: 'var(--space-4)' }} onSubmit={e => { e.preventDefault(); next(); }}>
             <div className="stat-card__label">BVN verification</div>
-            <div className="surface" style={{ background: 'var(--color-info-soft)', borderColor: 'var(--color-info-border)', padding: '10px 14px' }}>
-              <div className="row" style={{ gap: 8 }}>
-                <Icon name="info" size={15} />
-                <span className="text-sm">Demo environment: this check is mocked. Any valid 11-digit BVN will pass.</span>
-              </div>
-            </div>
             <Field label="Bank Verification Number (BVN)" hint="An 11-digit number issued by the CBN">
               <Input inputMode="numeric" maxLength={11} value={form.bvn} onChange={e => set('bvn')(e.target.value)} placeholder="Enter your 11-digit BVN" required />
             </Field>
