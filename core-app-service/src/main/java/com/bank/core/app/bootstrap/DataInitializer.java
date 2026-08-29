@@ -115,13 +115,14 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         User admin = User.builder()
-            .username(adminUsername)
-            .email(adminEmail)
-            .password(passwordEncoder.encode(adminPassword))
-            .uid(com.github.f4b6a3.ulid.UlidCreator.getUlid().toString())
-            .roles(Set.of(adminRole))
-            .permissions(Set.of())
-            .build();
+                .username(adminUsername)
+                .email(adminEmail)
+                .password(passwordEncoder.encode(adminPassword))
+                .uid(com.github.f4b6a3.ulid.UlidCreator.getUlid().toString())
+                .roles(Set.of(adminRole))
+                .permissions(Set.of())
+                .emailVerified(true)
+                .build();
 
         userRepository.save(admin);
         log.info("Default admin user created: {} ({})", adminUsername, adminEmail);
