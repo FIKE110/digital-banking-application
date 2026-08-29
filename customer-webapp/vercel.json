@@ -2,6 +2,7 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/:path*", "destination": "http://ec2-16-16-169-107.eu-north-1.compute.amazonaws.com/api/:path*" },
     { "source": "/((?!api).*)", "destination": "/index.html" }
   ]
 }
