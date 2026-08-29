@@ -41,6 +41,14 @@ public class User extends AuditModel implements UserDetails {
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
+    @Builder.Default
+    @Column(name = "email_verified")
+    private Boolean emailVerified = false;
+
+    public boolean isEmailVerified() {
+        return Boolean.TRUE.equals(emailVerified);
+    }
+
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
     @ManyToMany(fetch = FetchType.EAGER)

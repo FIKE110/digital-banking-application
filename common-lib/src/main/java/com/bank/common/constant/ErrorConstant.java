@@ -13,6 +13,7 @@ public final class ErrorConstant {
     public static final String FORBIDDEN = "ERR-007";
     public static final String METHOD_NOT_ALLOWED = "ERR-008";
     public static final String MEDIA_TYPE_NOT_SUPPORTED = "ERR-009";
+    public static final String EMAIL_NOT_VERIFIED = "EMAIL_NOT_VERIFIED";
 
     public static final String NOT_FOUND_MSG = "{resource} not found with {field}: {value}";
     public static final String DUPLICATE_MSG = "{resource} already exists with {field}: {value}";

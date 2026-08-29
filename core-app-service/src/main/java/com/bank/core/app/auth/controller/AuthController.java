@@ -4,9 +4,11 @@ import com.bank.common.constant.MessageConstant;
 import com.bank.common.dto.auth.ForgotPasswordRequestDto;
 import com.bank.common.dto.auth.LoginRequestDto;
 import com.bank.common.dto.auth.LoginResponseDto;
+import com.bank.common.dto.auth.ResendVerificationRequestDto;
 import com.bank.common.dto.auth.ResetPasswordRequestDto;
 import com.bank.common.dto.auth.SignupRequestDto;
 import com.bank.common.dto.auth.UserResponseDto;
+import com.bank.common.dto.auth.VerifyEmailRequestDto;
 import com.bank.common.util.ApiResponseUtil;
 import com.bank.common.wrapper.ApiResponse;
 import com.bank.core.app.auth.service.AuthService;
@@ -29,6 +31,18 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Object>> register(@RequestBody SignupRequestDto dto) {
         authService.signupUser(dto);
         return ApiResponseUtil.buildSuccess(HttpStatus.CREATED.value(), MessageConstant.USER_CREATED,null);
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<ApiResponse<Object>> verifyEmail(@RequestBody VerifyEmailRequestDto dto) {
+        authService.verifyEmail(dto);
+        return ApiResponseUtil.buildSuccess(HttpStatus.OK.value(), MessageConstant.EMAIL_VERIFIED_SUCCESS, null);
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<ApiResponse<Object>> resendVerification(@RequestBody ResendVerificationRequestDto dto) {
+        authService.resendEmailVerification(dto);
+        return ApiResponseUtil.buildSuccess(HttpStatus.OK.value(), MessageConstant.OTP_SENT, null);
     }
 
     @PostMapping("/login")

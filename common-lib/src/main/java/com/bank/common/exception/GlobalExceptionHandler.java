@@ -148,6 +148,7 @@ public class GlobalExceptionHandler {
             case ErrorConstant.UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
             case ErrorConstant.FORBIDDEN -> HttpStatus.FORBIDDEN;
             case ErrorConstant.BAD_REQUEST, ErrorConstant.VALIDATION_ERROR -> HttpStatus.BAD_REQUEST;
+            case ErrorConstant.EMAIL_NOT_VERIFIED -> HttpStatus.FORBIDDEN;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }

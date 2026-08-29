@@ -7,6 +7,12 @@ export const login = (username: string, password: string) =>
 export const register = (username: string, email: string, password: string) =>
   client.post<ApiResponse<unknown>>('/auth/register', { username, email, password }).then(r => r.data);
 
+export const verifyEmail = (email: string, otp: string) =>
+  client.post<ApiResponse<unknown>>('/auth/verify-email', { email, otp }).then(r => r.data);
+
+export const resendVerification = (email: string) =>
+  client.post<ApiResponse<unknown>>('/auth/resend-verification', { email }).then(r => r.data);
+
 export const logout = (token: string) =>
   client.post<ApiResponse<unknown>>('/auth/logout', null, { params: { token } }).then(r => r.data);
 

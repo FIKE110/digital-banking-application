@@ -150,10 +150,16 @@ public class EmailNotificationListener {
     private void sendOtpSent(Map<String, String> payload, OutboxEventMessage event) {
         Map<String, String> variables = baseVariables();
         variables.put("name", payload.get("name"));
-        variables.put("otpCode", payload.get("otp"));
+        variables.put("otpCode", payload.get("otpCode"));
         variables.put("expiresAt", payload.get("expiresAt"));
-        String html = templateService.render("templates/email/otp.html", variables);
-        deliveryService.deliver("OTP_SENT", payload.get("email"), "Your One-Time Password", html, event.getAggregateId());
+        if ("EMAIL_VERIFICATION".equals(payload.get("otpType"))) {
+            String html = templateService.render("templates/email/verify.html", variables);
+            deliveryService.deliver("OTP_SENT", payload.get("email"),
+                    "Your " + bankName + " verification code", html, event.getAggregateId());
+        } else {
+            String html = templateService.render("templates/email/otp.html", variables);
+            deliveryService.deliver("OTP_SENT", payload.get("email"), "Your One-Time Password", html, event.getAggregateId());
+        }
     }
 
     private void sendAdminAuditAlert(Map<String, String> payload, OutboxEventMessage event) {

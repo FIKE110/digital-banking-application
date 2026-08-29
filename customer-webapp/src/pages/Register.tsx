@@ -5,7 +5,6 @@ import AuthLayout from '../ui/AuthLayout';
 import Button from '../ui/Button';
 import { Field, Input } from '../ui/FormControls';
 import Icon from '../ui/Icon';
-import { useToast } from '../ui/Toast';
 
 const STRENGTH_META = [
   { label: 'Very weak', color: 'var(--color-danger)' },
@@ -43,8 +42,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function Register() {
-  const { register, login } = useAuth();
-  const { success } = useToast();
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -82,9 +80,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(username, email, password);
-      await login(username, password);
-      success('Login successful. Redirecting to your dashboard…');
-      navigate('/dashboard');
+      navigate('/verify-email', { state: { email: email.trim() } });
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Unable to complete sign up. Please try again.');
     } finally {

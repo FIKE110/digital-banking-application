@@ -16,6 +16,7 @@ public final class MessageConstant {
     public static final String TOKEN_REFRESHED = "Token refreshed";
     public static final String OTP_SENT = "OTP sent successfully";
     public static final String PASSWORD_RESET = "Password reset successfully";
+    public static final String EMAIL_VERIFIED_SUCCESS = "Email verified successfully. You can now sign in.";
 
     // =========================
     // USER MESSAGES

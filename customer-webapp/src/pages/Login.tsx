@@ -27,6 +27,10 @@ export default function Login() {
         navigate('/dashboard');
       }
     } catch (err: any) {
+      if (err.response?.data?.errorCode === 'EMAIL_NOT_VERIFIED') {
+        navigate('/verify-email', { state: { email: username } });
+        return;
+      }
       setError(err.response?.data?.message || 'Invalid username or password');
     } finally {
       setLoading(false);

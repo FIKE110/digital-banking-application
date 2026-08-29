@@ -4,10 +4,12 @@ import com.bank.common.constant.ErrorConstant;
 import com.bank.common.dto.auth.ForgotPasswordRequestDto;
 import com.bank.common.dto.auth.LoginRequestDto;
 import com.bank.common.dto.auth.LoginResponseDto;
+import com.bank.common.dto.auth.ResendVerificationRequestDto;
 import com.bank.common.dto.auth.ResetPasswordRequestDto;
 import com.bank.common.dto.auth.SignupRequestDto;
 import com.bank.common.dto.auth.Token;
 import com.bank.common.dto.auth.UserResponseDto;
+import com.bank.common.dto.auth.VerifyEmailRequestDto;
 import com.bank.common.enums.OtpType;
 import com.bank.common.exception.CustomException;
 import com.bank.common.exception.DuplicateResourceException;
@@ -69,6 +71,11 @@ public class AuthService {
 
         if(!authentication.isAuthenticated()) throw new BadCredentialsException("Invalid username or password");
 
+        if (authentication.getPrincipal() instanceof User user && !user.isEmailVerified()) {
+            throw new CustomException(ErrorConstant.EMAIL_NOT_VERIFIED,
+                    "Please verify your email address before signing in. Check your inbox for the verification code.");
+        }
+
         Token token= new Token();
         token.setAccessToken(jwtService.generateAccessToken(authentication));
         token.setRefreshToken(jwtService.generateRefreshToken(authentication));
@@ -104,9 +111,12 @@ public class AuthService {
         user.setAuthorities(Collections.emptyList());
         user.setUid(UlidCreator.getUlid().toString());
         user.setLastLogoutDate(null);
+        user.setEmailVerified(false);
         user.setRoles(Set.of(role));
         user.setPermissions(Collections.emptySet());
         userRepository.save(user);
+
+        sendEmailVerificationOtp(user);
 
         try {
             Map<String, Object> payload = new HashMap<>();
@@ -118,6 +128,85 @@ public class AuthService {
         } catch (Exception e) {
             throw new CustomException(ErrorConstant.INTERNAL_SERVER_ERROR, "Failed to serialize outbox payload");
         }
+    }
+
+    private void sendEmailVerificationOtp(User user) {
+        userOtpRepository.findTopByUserUidAndOtpTypeAndVerifiedAtIsNullOrderByCreatedAtDesc(
+                user.getUid(), OtpType.EMAIL_VERIFICATION).ifPresent(otp -> {
+            otp.setVerifiedAt(LocalDateTime.now());
+            userOtpRepository.save(otp);
+        });
+
+        String code = String.format("%06d", new Random().nextInt(999999));
+
+        UserOtp userOtp = UserOtp.builder()
+                .userUid(user.getUid())
+                .otpCode(code)
+                .otpType(OtpType.EMAIL_VERIFICATION)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .attemptCount(0)
+                .build();
+        userOtpRepository.save(userOtp);
+
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("email", user.getEmail());
+            payload.put("otpCode", code);
+            payload.put("name", user.getUsername());
+            payload.put("expiresAt", userOtp.getExpiresAt().toString());
+            payload.put("otpType", OtpType.EMAIL_VERIFICATION.name());
+            outboxService.saveEvent("USER", user.getUid(), "OTP_SENT",
+                    objectMapper.writeValueAsString(payload),
+                    userOtp.getExpiresAt());
+        } catch (Exception e) {
+            throw new CustomException(ErrorConstant.INTERNAL_SERVER_ERROR, "Failed to serialize outbox payload");
+        }
+    }
+
+    @Transactional
+    public void verifyEmail(VerifyEmailRequestDto dto) {
+        User user = userRepository.findByUsernameOrEmailOrUid(dto.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND_MSG,
+                        "User not found with email: " + dto.getEmail()));
+
+        if (user.isEmailVerified()) return;
+
+        UserOtp otp = userOtpRepository.findTopByUserUidAndOtpTypeAndVerifiedAtIsNullOrderByCreatedAtDesc(
+                user.getUid(), OtpType.EMAIL_VERIFICATION)
+                .orElseThrow(() -> new BadCredentialsException("No pending verification code. Please request a new one."));
+
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadCredentialsException("Verification code has expired. Please request a new one.");
+        }
+
+        if (otp.getAttemptCount() >= 5) {
+            otp.setVerifiedAt(LocalDateTime.now());
+            userOtpRepository.save(otp);
+            throw new BadCredentialsException("Maximum attempts exceeded. Please request a new code.");
+        }
+
+        if (!otp.getOtpCode().equals(dto.getOtp())) {
+            otp.setAttemptCount(otp.getAttemptCount() + 1);
+            userOtpRepository.save(otp);
+            throw new BadCredentialsException("Invalid verification code");
+        }
+
+        otp.setVerifiedAt(LocalDateTime.now());
+        userOtpRepository.save(otp);
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void resendEmailVerification(ResendVerificationRequestDto dto) {
+        User user = userRepository.findByUsernameOrEmailOrUid(dto.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorConstant.NOT_FOUND_MSG,
+                        "User not found with email: " + dto.getEmail()));
+
+        if (user.isEmailVerified()) return;
+
+        sendEmailVerificationOtp(user);
     }
 
     public void logout(String accessToken) {
@@ -155,6 +244,7 @@ public class AuthService {
             payload.put("otpCode", code);
             payload.put("name", user.getUsername());
             payload.put("expiresAt", userOtp.getExpiresAt().toString());
+            payload.put("otpType", OtpType.FORGOT_PASSWORD.name());
             outboxService.saveEvent("USER", user.getUid(), "OTP_SENT",
                     objectMapper.writeValueAsString(payload),
                     userOtp.getExpiresAt());
